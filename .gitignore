@@ -1,0 +1,10 @@
+.idea
+.vscode
+license.txt
+config.yaml
+*.exe
+__*
+*.log
+*.db
+*.xlsx
+*.xls

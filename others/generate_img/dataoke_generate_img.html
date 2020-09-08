@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>图片生成 v1.0.2</title>
+    <link rel="stylesheet" href="https://res.wx.qq.com/open/libs/weui/1.1.3/weui.min.css" />
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="http://www.gongjuji.net/Content/files/jquery.md5.js"></script>
+</head>
+
+<body>
+    <canvas id="drawing" style="border:1px solid black">
+        <p>The canvas element is not supported!</p>
+    </canvas>
+    <div>
+        <span>
+            <span>app key:</span>
+            <input id="appKey" type="text" value="5e9d2dbadc286">
+        </span><br />
+        <span>
+            <span>app secret:</span>
+            <input id="appSecret" type="text" value="8f3c81484fdf7bd2695ddbbc6a128201">
+        </span><br />
+        <span>
+            <span>商品 id： </span>
+            <input id="goodsID" type="text" value="">
+        </span><br />
+        <span>
+            <span>开始时间</span>
+            <input id="startTime" type="text" value="2020 07 31">
+        </span><br />
+        <span>
+            <span>结束时间</span>
+            <input id="endTime" type="text" value="2020 08 01">
+        </span><br />
+        <span>
+            <span>佣金比率</span>
+            <input id="commissionRate" type="text" value="25">
+        </span><br />
+        <span>
+            <span>服务费率</span>
+            <input id="serviceRate" type="text" value="15">
+        </span><br />
+        <span>
+            <button id="addWaterMark" onclick="generateImage()">生成图片</button>
+        </span>
+    </div>
+
+    <script>
+        var cxt = drawing.getContext('2d');
+        var W, H;
+        var img = new Image();
+        $(document).ready(function () {
+            img.src = "./background.png"
+            img.onload = function () {
+                drawing.width = W = img.width;
+                drawing.height = H = img.height;
+                cxt.drawImage(img, 0, 0);
+            }
+        });
+    </script>
+    <script>
+        // 标题、销售价格、券后价、销量、店铺名
+        var title, originalPrice, actualPrice, monthSales, shopName, mainPicUrl
+        // 主图
+        var mainPic = new Image();
+        function generateImage() {
+            if (!getItemInfo()) {
+                return
+            }
+            addWaterMark();
+        }
+        function getItemInfo() {
+            if (goodsID.value.length == 0) {
+                alert("请输入商品id");
+                return false;
+            }
+            if (appKey.value.length == 0) {
+                alert("请输入appKey");
+                return false;
+            }
+            if (appSecret.value.length == 0) {
+                alert("请输入appSecret");
+                return false;
+            }
+
+            var params = "appKey=" + appKey.value + "&goodsId=" + goodsID.value + "&version=v1.2.3";
+            var str = params + "&key=" + appSecret.value;
+            var sign = $.md5(str);
+            var url = "https://openapi.dataoke.com/api/goods/get-goods-details" + "?" + params + "&sign=" + sign
+            console.log(url)
+            $.ajax({
+                url: url,
+                async: false,
+                success: function (resp) {
+                    console.log(resp)
+                    item = resp.data
+                    title = item.title
+                    originalPrice = item.originalPrice
+                    // actualPrice = "￥" + item.actualPrice
+                    actualPrice = "￥" + item.originalPrice
+                    monthSales = item.monthSales
+                    shopName = item.shopName
+                    mainPicUrl = item.mainPic
+                    if (mainPicUrl.indexOf("http:") != 0 && mainPicUrl.indexOf("https:") != 0) {
+                        mainPicUrl = "http:" + mainPicUrl
+                    }
+                }
+            });
+
+            return true
+        }
+        function addWaterMark() {
+
+            // 画底图
+            cxt.clearRect(0, 0, W, H);
+            cxt.drawImage(img, 0, 0);
+
+            // 画开始时间，结束时间，标题，销量，券后价，店铺名
+            var start_time = startTime.value;
+            var end_time = endTime.value;
+            var commission_rate = commissionRate.value;
+            var service_rate = serviceRate.value;
+            cxt.font = "bold 12px Arial";
+            cxt.lineWidth = '1';
+            cxt.fillStyle = 'rgba(51,51,51,1)';
+            cxt.textBaseline = "bottom";
+            cxt.fillText(start_time, W - 864, H - 73, W / 2);
+            cxt.fillText(end_time, W - 864, H - 55, W / 2);
+            cxt.fillText(monthSales, W - 1450, H - 49, W / 2);
+            cxt.fillText(actualPrice, W - 1245, H - 80, W / 2);
+            cxt.fillText(shopName, W - 1470, H - 26, W / 2);
+            cxt.fillText(title, W - 1485, H - 102, W / 2);
+
+            // 画原价
+            cxt.font = "bold 13px Arial";
+            cxt.fillText(originalPrice, W - 1475, H - 76, W / 2);
+
+            // 画佣金比率，服务费率
+            cxt.fillStyle = 'rgba(255,51,0,1)';
+            cxt.fillText(commission_rate, W - 683, H - 63, W / 2);
+            cxt.fillText(service_rate, W - 543, H - 63, W / 2);
+
+            // 画主图
+            mainPic.src = mainPicUrl;
+            mainPic.onload = function () {
+                cxt.drawImage(mainPic, 30, 110, 100, 100)
+            }
+            // $.ajax({
+            //     url: mainPicUrl,
+            //     async: false,
+            //     success: function (resp) {
+            //         mainPic.src = resp
+            //         mainPic.onload = function () {
+            //             console.log(mainPic)
+            //         }
+            //         cxt.clearRect(0, 0, W, H);
+            //         console.log(mainPic)
+            //         cxt.drawImage(resp, 0, 0)
+            //     }
+            // })
+        }
+    </script>
+</body>
+
+</html>
