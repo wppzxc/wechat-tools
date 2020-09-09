@@ -284,6 +284,18 @@ func (ctl *Controller) getUsers(c echo.Context) error {
 		}
 		html := fmt.Sprintf(defaultHTML, raws)
 		return c.HTML(http.StatusOK, html)
+	case database.UserRoleWhite:
+		whs, err := database.GetAllWhiteLists()
+		if err != nil {
+			return err
+		}
+		raws := ""
+		for _, u := range whs {
+			raw := fmt.Sprintf(defaultTableRaw, "-", u.Wxid, "-")
+			raws = fmt.Sprintf("%s\n%s", raws, raw)
+		}
+		html := fmt.Sprintf(defaultHTML, raws)
+		return c.HTML(http.StatusOK, html)
 	default:
 		return fmt.Errorf("不支持的角色类型：%s", role)
 	}

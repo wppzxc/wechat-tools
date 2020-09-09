@@ -16,8 +16,12 @@ const (
 	defaultTimeUnit = time.Hour
 )
 
-// StartInviteManger 开始强制邀请任务
+// StartInviteManger 开始群裂变任务
 func (ctl *Controller) StartInviteManger(stopCh chan struct{}) {
+	if config.GlobalConfig.InviteMangerConf.AlertHours == 0 || config.GlobalConfig.InviteMangerConf.RemoveHours == 0 {
+		klog.Info("群裂变模块：提醒时间或踢除时间为0，不启动群裂变功能")
+		return
+	}
 	klog.Info("开始强制邀请任务")
 	wait.Until(ctl.startInviteManagerWork, 1*defaultTimeUnit, stopCh)
 	klog.Info("停止强制邀请任务")
@@ -84,6 +88,10 @@ func (ctl *Controller) startInviteManagerWork() {
 // getNeedRemoveUser 判断该群组中的用户是否超过踢出时间
 func (ctl *Controller) getNeedRemoveUser(users []database.User) *database.User {
 	for _, u := range users {
+		if _, err := database.GetWhiteListByWxid(u.Wxid); err == nil {
+			klog.V(6).Infof("跳过白名单用户%s(%s)", u.NickName, u.Wxid)
+			continue
+		}
 		// 如果未警告过，则跳过
 		if !u.Alerted {
 			continue
@@ -107,6 +115,10 @@ func (ctl *Controller) getNeedRemoveUser(users []database.User) *database.User {
 // getNeedAlertUser 判断该群组中的用户是否超过警告时间
 func (ctl *Controller) getNeedAlertUser(users []database.User) *database.User {
 	for _, u := range users {
+		if _, err := database.GetWhiteListByWxid(u.Wxid); err == nil {
+			klog.V(6).Infof("跳过白名单用户:%s(%s)", u.NickName, u.Wxid)
+			continue
+		}
 		// 如果是活跃用户，则跳过
 		if u.Active {
 			continue

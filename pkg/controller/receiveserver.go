@@ -132,6 +132,10 @@ func (ctl *Controller) execGroupMsg(reqParams *types.RequestParam) error {
 	if reqParams.Event == types.EventGroupMsg && utils.UsersContain(config.GlobalConfig.InviteMangerConf.ManageGroups, reqParams.FromWxid) &&
 		reqUser.Role == database.UserRoleNormal {
 		if kickOut := ctl.judgeMsgKickOut(reqParams); kickOut {
+			if _, err := database.GetWhiteListByWxid(reqParams.FinalFromWxid); err == nil {
+				klog.Infof("用户%s(%s)在白名单中，不踢除", reqParams.FinalFromName, reqParams.FinalFromWxid)
+				return nil
+			}
 			msg := fmt.Sprintf("此人%s(%s)违反群规已被踢出群聊，并永久加入黑名单，如有误踢请联系群主或管理员用户", reqParams.FinalFromName, reqParams.FinalFromWxid)
 			// 发出踢出提示
 			ctl.enqueueSendMsg(utils.TextMsgSendParam(msg, reqParams.FromWxid))

@@ -23,6 +23,7 @@ const (
 	UserRoleVip     = "vip"
 	UserRoleNormal  = "normal"
 	UserRoleBlack   = "black"
+	UserRoleWhite   = "white"
 )
 
 // 用户
@@ -44,6 +45,11 @@ type BlackList struct {
 	Wxid string `gorm:"type:varchar(72)"`
 }
 
+type WhiteList struct {
+	gorm.Model
+	Wxid string `gorm:"type:varchar(72)"`
+}
+
 func InitDB() *gorm.DB {
 	var err error
 	dbConn, err = gorm.Open("sqlite3", "./wechat-tools.db")
@@ -54,6 +60,7 @@ func InitDB() *gorm.DB {
 	dbConn.LogMode(true)
 	dbConn.AutoMigrate(User{})
 	dbConn.AutoMigrate(BlackList{})
+	dbConn.AutoMigrate(WhiteList{})
 	return dbConn
 }
 

@@ -10,8 +10,6 @@ import (
 	"github.com/wppzxc/wechat-tools/pkg/utils"
 	"github.com/wppzxc/wechat-tools/pkg/wechat"
 	"k8s.io/klog"
-	"os/exec"
-	"syscall"
 )
 
 type InviteManager struct {
@@ -38,7 +36,7 @@ func GetInviteManager(mw *walk.MainWindow) *InviteManager {
 	im.ManageOwnersStr = utils.GetUsersNameStr(config.GlobalConfig.InviteMangerConf.ManageOwners)
 
 	im.MainPage = &TabPage{
-		Title:  "群管功能设置",
+		Title:  "群裂变设置",
 		Layout: VBox{},
 		DataBinder: DataBinder{
 			AutoSubmit: true,
@@ -172,35 +170,6 @@ func GetInviteManager(mw *walk.MainWindow) *InviteManager {
 						Value:    Bind("AlertTimeEnd", Range{0, 24}),
 						Suffix:   " /(24)",
 						Decimals: 0,
-					},
-				},
-			},
-			Composite{
-				Layout: HBox{},
-				Children: []Widget{
-					PushButton{
-						Text: "查看管理员",
-						OnClicked: func() {
-							cmd := exec.Command(`cmd`, `/c`, `start`, `http://127.0.0.1:8074/roles/manager/users`)
-							cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-							cmd.Start()
-						},
-					},
-					PushButton{
-						Text: "查看普通用户",
-						OnClicked: func() {
-							cmd := exec.Command(`cmd`, `/c`, `start`, `http://127.0.0.1:8074/roles/normal/users`)
-							cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-							cmd.Start()
-						},
-					},
-					PushButton{
-						Text: "查看黑名单",
-						OnClicked: func() {
-							cmd := exec.Command(`cmd`, `/c`, `start`, `http://127.0.0.1:8074/roles/black/users`)
-							cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-							cmd.Start()
-						},
 					},
 				},
 			},
