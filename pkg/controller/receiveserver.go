@@ -179,6 +179,18 @@ func (ctl *Controller) execGroupMsg(reqParams *types.RequestParam) error {
 
 func (ctl *Controller) execFriendMsg(reqParams *types.RequestParam) error {
 	klog.V(3).Infof("收到私聊消息: %s", reqParams.Msg)
+	// 自动通过群邀请
+	if reqParams.Type == types.GroupInvite {
+		if config.GlobalConfig.SendReceiveConf.AutoAgreeGroupInvite {
+			go func(reqParam *types.RequestParam) {
+				if err := ctl.execGroupInvite(reqParam); err != nil {
+					klog.Error(err)
+					return
+				}
+			}(reqParams)
+			return nil
+		}
+	}
 	// 添加好友成功之后
 	if reqParams.Type == types.FriendWelcomeMsg {
 		// 自动回复消息和发送图片
@@ -228,6 +240,20 @@ func (ctl *Controller) execFriendVerify(reqParams *types.RequestParam) error {
 	time.Sleep(3 * time.Second)
 	// 自动同意好友请求
 	if err := wechat.AgreeFriendVerify(config.GlobalConfig.LocalUser.RobotWxid, reqParams.JsonMsg); err != nil {
+		klog.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (ctl *Controller) execGroupInvite(reqParams *types.RequestParam) error {
+	ctl.agreeLock.Lock()
+	defer ctl.agreeLock.Unlock()
+	klog.Infof("收到群邀请: %s", reqParams.JsonMsg)
+	klog.Info("暂停3秒钟")
+	time.Sleep(3 * time.Second)
+	// 自动同意好友请求
+	if err := wechat.AgreeGroupVerify(config.GlobalConfig.LocalUser.RobotWxid, reqParams.JsonMsg); err != nil {
 		klog.Error(err)
 		return err
 	}

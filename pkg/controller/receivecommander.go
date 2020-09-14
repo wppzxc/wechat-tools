@@ -98,8 +98,8 @@ func (ctl *Controller) execGroupUserAdd(jsonMsg string) error {
 				ctl.enqueueSendAction(utils.RemoveMsgSendParam(addMsg.GroupWxid, u.Wxid))
 				rmUsers = path.Join(rmUsers, fmt.Sprintf("%s(%s)", u.NickName, u.Wxid))
 			}
-			msg := fmt.Sprintf("用户%s在黑名单中，立即踢出", rmUsers)
-			ctl.enqueueSendMsg(utils.TextMsgSendParam(msg, addMsg.GroupWxid))
+			// msg := fmt.Sprintf("用户%s在黑名单中，立即踢出", rmUsers)
+			// ctl.enqueueSendMsg(utils.TextMsgSendParam(msg, addMsg.GroupWxid))
 		}
 	}
 
@@ -202,7 +202,7 @@ func (ctl *Controller) manageRemoveGroupUser(reqParam *types.RequestParam) error
 
 		// 踢掉用户
 		ctl.enqueueSendAction(utils.RemoveMsgSendParam(reqParam.FromWxid, user.Wxid))
-		result = fmt.Sprintf("踢出用户%s(%s)成功", user.NickName, user.Wxid)
+		result = fmt.Sprintf("@%s 违反群规，已踢出群聊，如果有误踢，请联系群主或管理员拉回。", atNickname)
 	}
 	ctl.enqueueSendMsg(utils.TextMsgSendParam(result, reqParam.FromWxid))
 	return nil

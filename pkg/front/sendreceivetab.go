@@ -10,23 +10,24 @@ import (
 )
 
 type SendReceiver struct {
-	StartSendReceiver   bool
-	ParentWindow        *walk.MainWindow
-	MainPage            *TabPage
-	GroupUserLineEdit   *walk.TextEdit
-	GroupUsers          string
-	UsersTextEdit       *walk.TextEdit
-	Users               string
-	LoginBtn            *walk.PushButton
-	StartBtn            *walk.PushButton
-	StopBtn             *walk.PushButton
-	ShowGroupUserDlgBtn *walk.PushButton
-	ShowSendUserDlgBtn  *walk.PushButton
-	Keywords            string
-	FilterKeywords      string
-	TranMoneySep        bool
-	SendInterval        int
-	ActionInterval      int
+	StartSendReceiver    bool
+	ParentWindow         *walk.MainWindow
+	MainPage             *TabPage
+	GroupUserLineEdit    *walk.TextEdit
+	GroupUsers           string
+	UsersTextEdit        *walk.TextEdit
+	Users                string
+	LoginBtn             *walk.PushButton
+	StartBtn             *walk.PushButton
+	StopBtn              *walk.PushButton
+	ShowGroupUserDlgBtn  *walk.PushButton
+	ShowSendUserDlgBtn   *walk.PushButton
+	Keywords             string
+	FilterKeywords       string
+	TranMoneySep         bool
+	SendInterval         int
+	ActionInterval       int
+	AutoAgreeGroupInvite bool
 }
 
 func GetSendReceiverPage(mw *walk.MainWindow) *SendReceiver {
@@ -84,6 +85,10 @@ func GetSendReceiverPage(mw *walk.MainWindow) *SendReceiver {
 							CheckBox{
 								Text:    "开启 ￥、$ 转 ( （",
 								Checked: Bind("TranMoneySep"),
+							},
+							CheckBox{
+								Text:    "自动通过群邀请",
+								Checked: Bind("AutoAgreeGroupInvite"),
 							},
 						},
 					},

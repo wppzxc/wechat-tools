@@ -23,18 +23,33 @@ import (
 )
 
 // IsAtMsg 判断是否是at消息
-func IsAtMsg(msg string) (atNickname string, atWxid string, sendMsg string, isAtMsg bool) {
-	index := strings.Index(msg, "@at,nickname=")
-	if index >= 0 {
-		strs := strings.SplitN(msg, "  ", 2)
-		kvs := strs[0][1 : len(strs[0])-1]
-		params := strings.Split(kvs, ",")
-		atNickname = strings.Split(params[1], "=")[1]
-		atWxid = strings.Split(params[2], "=")[1]
-		sendMsg = strs[1]
-		return atNickname, atWxid, sendMsg, true
+// func IsAtMsg(msg string) (atNickname string, atWxid string, sendMsg string, isAtMsg bool) {
+// 	index := strings.Index(msg, "@at,nickname=")
+// 	if index >= 0 {
+// 		strs := strings.SplitN(msg, "  ", 2)
+// 		kvs := strs[0][1 : len(strs[0])-1]
+// 		params := strings.Split(kvs, ",")
+// 		atNickname = strings.Split(params[1], "=")[1]
+// 		atWxid = strings.Split(params[2], "=")[1]
+// 		sendMsg = strs[1]
+// 		return atNickname, atWxid, sendMsg, true
+// 	}
+// 	return "", "", "", false
+// }
+
+// IsAtMsg 判断是否是at消息
+func IsAtMsg(msg string) (string, string, string, bool) {
+	reg := regexp.MustCompile(`\[@at,nickname=.*\]`)
+	matchStr := reg.FindString(msg)
+	if len(matchStr) == 0 {
+		return "", "", "", false
 	}
-	return "", "", "", false
+	sendMsg := strings.TrimSpace(strings.Replace(msg, matchStr, "", -1))
+	kvs := matchStr[1 : len(matchStr)-1]
+	params := strings.Split(kvs, ",")
+	atNickname := strings.Split(params[1], "=")[1]
+	atWxid := strings.Split(params[2], "=")[1]
+	return atNickname, atWxid, sendMsg, true
 }
 
 // TranMoneySep 转换 ￥/$ 为 ()
@@ -244,7 +259,7 @@ func CheckWechat() error {
 
 }
 
-// GetWeChatProcessStatus 获取微信进程状态 
+// GetWeChatProcessStatus 获取微信进程状态
 func GetWeChatProcessStatus(appName string) (string, error) {
 	cmd := exec.Command("tasklist", "/V")
 	output, err := cmd.CombinedOutput()

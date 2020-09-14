@@ -11,8 +11,10 @@ import (
 
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
+	"github.com/tealeg/xlsx"
 	"github.com/wppzxc/wechat-tools/pkg/config"
 	"github.com/wppzxc/wechat-tools/pkg/database"
+	"github.com/wppzxc/wechat-tools/pkg/wechat"
 	"k8s.io/klog"
 )
 
@@ -247,6 +249,10 @@ func GetAutoRemoverPage(mw *walk.MainWindow) *AutoRemover {
 							cmd.Start()
 						},
 					},
+					PushButton{
+						Text:      "导出群成员数量",
+						OnClicked: ar.exportGroupsMemberInfo,
+					},
 				},
 			},
 		},
@@ -401,6 +407,7 @@ func (ar *AutoRemover) exportWhiteList() {
 		walk.MsgBox(ar.ParentWindow, "错误", fmt.Sprintf("导出白名单文件失败: %s！", err.Error()), walk.MsgBoxIconError)
 		return
 	}
+	walk.MsgBox(ar.ParentWindow, "成功", fmt.Sprintf("导出成功"), walk.MsgBoxIconInformation)
 	return
 }
 
@@ -431,5 +438,47 @@ func (ar *AutoRemover) exportBlackList() {
 		walk.MsgBox(ar.ParentWindow, "错误", fmt.Sprintf("导出黑名单文件失败: %s！", err.Error()), walk.MsgBoxIconError)
 		return
 	}
+	walk.MsgBox(ar.ParentWindow, "成功", fmt.Sprintf("导出成功"), walk.MsgBoxIconInformation)
 	return
+}
+
+func (ar *AutoRemover) exportGroupsMemberInfo() {
+	groups, err := wechat.GetGroupList(config.GlobalConfig.LocalUser.RobotWxid)
+	if err != nil {
+		walk.MsgBox(ar.ParentWindow, "错误", fmt.Sprintf("导出群信息失败: %s！", err.Error()), walk.MsgBoxIconError)
+	}
+	filename := fmt.Sprintf("./%d-群信息.xlsx", time.Now().Unix())
+	var file *xlsx.File
+	var sheet *xlsx.Sheet
+	var row *xlsx.Row
+	var cell *xlsx.Cell
+	file = xlsx.NewFile()
+	sheet, _ = file.AddSheet("美逛后台数据")
+	row = sheet.AddRow()
+
+	cell = row.AddCell()
+	cell.Value = "群名称"
+	cell = row.AddCell()
+	cell.Value = "群id"
+	cell = row.AddCell()
+	cell.Value = "群成员数量"
+
+	for _, g := range groups {
+		row = sheet.AddRow()
+		cell = row.AddCell()
+		cell.Value = g.Name
+		cell = row.AddCell()
+		cell.Value = g.Wxid
+		cell = row.AddCell()
+		members, err := wechat.GetGroupUserList(config.GlobalConfig.LocalUser.RobotWxid, g.Wxid)
+		if err != nil {
+			cell.Value = "读取失败"
+		} else {
+			cell.Value = fmt.Sprintf("%d", len(members))
+		}
+	}
+
+	if err := file.Save(filename); err != nil {
+		walk.MsgBox(ar.ParentWindow, "错误", fmt.Sprintf("保存文件失败: %s！", err.Error()), walk.MsgBoxIconError)
+	}
 }

@@ -32,6 +32,7 @@ func (sr *SendReceiver) ValidateConfig() error {
 	config.GlobalConfig.SendReceiveConf.StartSendReceiver = sr.StartSendReceiver
 	config.GlobalConfig.SendReceiveConf.SendInterval = sr.SendInterval
 	config.GlobalConfig.SendReceiveConf.ActionInterval = sr.ActionInterval
+	config.GlobalConfig.SendReceiveConf.AutoAgreeGroupInvite = sr.AutoAgreeGroupInvite
 
 	if err := config.SaveConfig(""); err != nil {
 		klog.Error(err)

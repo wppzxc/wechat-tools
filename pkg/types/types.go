@@ -53,10 +53,10 @@ const (
 	//DefaultRemotePort     = "8073"
 	//DefaultRemoteEndPoint = "http://152.136.224.208:8073/httpAPI"
 
-	// DefaultRemoteHost     = "172.18.47.230"
+	// DefaultRemoteHost     = "192.168.14.250"
 	// DefaultRemotePort     = "8073"
 	// DefaultRemoteEndPoint = "http://" + DefaultRemoteHost + ":" + DefaultRemotePort + "/httpAPI"
-	DefaultTimeout        = 5 * time.Second
+	DefaultTimeout = 5 * time.Second
 )
 
 // keaimao apiList
@@ -72,6 +72,7 @@ const (
 	GetGroupMemberList      = "GetGroupMemberList"
 	RemoveGroupMember       = "RemoveGroupMember"
 	AgreeFriendVerify       = "AgreeFriendVerify"
+	AgreeGroupInvite        = "AgreeGroupInvite"
 	InviteInGroup           = "InviteInGroup"
 )
 

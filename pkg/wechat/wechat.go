@@ -184,6 +184,32 @@ func AgreeFriendVerify(robotWxid string, jsonMsg string) error {
 	return nil
 }
 
+// AgreeFriendVerify 同意群邀请
+func AgreeGroupVerify(robotWxid string, jsonMsg string) error {
+	msgStr := strings.Replace(jsonMsg, "\"", "\\\"", -1)
+	msgStr = fmt.Sprintf(`"%s"`, msgStr)
+	jsonStr := fmt.Sprintf(`{"api": "%s", "robot_wxid": "%s", "json_msg": %s}`, types.AgreeGroupInvite, robotWxid, msgStr)
+	klog.Infof("input is: %s", jsonStr)
+	resp, err := http.Post(fmt.Sprintf("http://%s:%s/httpAPI", types.DefaultRemoteHost, types.DefaultRemotePort), "",
+		strings.NewReader(jsonStr))
+	if err != nil {
+		klog.Error(err)
+		return err
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		klog.Error(err)
+		return err
+	}
+	if resp.StatusCode != http.StatusOK {
+		errMsg := fmt.Errorf("接收好友请求失败: '%s'", string(data))
+		return errMsg
+	}
+	klog.Infof("同意好友请求: %s", jsonMsg)
+	return nil
+}
+
 // InviteInGroup 邀请加入群聊
 func InviteInGroup(robotWxid string, groupWxid string, friendWxid string) error {
 	resp, err := http.Post(fmt.Sprintf("http://%s:%s/httpAPI", types.DefaultRemoteHost, types.DefaultRemotePort), "",

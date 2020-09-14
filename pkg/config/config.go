@@ -59,14 +59,15 @@ type CommonUserInfo struct {
 // - keywords 包含指定关键词才转发
 // - filterKeywords 包含指定关键词不转发
 type SendReceiveConf struct {
-	ReceiveFromGroup  ReceiveFromGroup
-	SendToUsers       []CommonUserInfo
-	Keywords          []string
-	FilterKeywords    []string
-	TranMoneySep      bool
-	StartSendReceiver bool
-	SendInterval      int
-	ActionInterval    int
+	ReceiveFromGroup     ReceiveFromGroup
+	SendToUsers          []CommonUserInfo
+	Keywords             []string
+	FilterKeywords       []string
+	TranMoneySep         bool
+	StartSendReceiver    bool
+	SendInterval         int
+	ActionInterval       int
+	AutoAgreeGroupInvite bool
 }
 
 // AutoRemoveConf 自动踢人配置

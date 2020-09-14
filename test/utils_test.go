@@ -50,3 +50,12 @@ func TestTransMoney(t *testing.T) {
 	newStr := utils.TranMoneySep(str)
 	fmt.Println(newStr)
 }
+
+func TestGetAt(t *testing.T) {
+	// msg := "踢[@at,nickname=A小蛙返现助手,wxid=wxid_98ummhax6pmy22]  "
+	msg := "[@at,nickname=A小蛙返现助手,wxid=wxid_98ummhax6pmy22]  踢"
+	nickName, wxid, sendMsg, ok := utils.IsAtMsg(msg)
+	if ok {
+		fmt.Printf("nickname: %s, wxid: %s, msg: %s\n", nickName, wxid, sendMsg)
+	}
+}
