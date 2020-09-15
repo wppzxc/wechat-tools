@@ -1,7 +1,10 @@
 package front
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+
 	"github.com/jinzhu/gorm"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
@@ -20,6 +23,7 @@ type InviteManager struct {
 	ManageGroupsStr      string
 	ManageOwnersStr      string
 	Start                bool
+	OwnerFilePathEdit    *walk.LineEdit
 }
 
 func GetInviteManager(mw *walk.MainWindow) *InviteManager {
@@ -145,6 +149,23 @@ func GetInviteManager(mw *walk.MainWindow) *InviteManager {
 											config.GlobalConfig.InviteMangerConf.ManageOwners = make([]config.CommonUserInfo, 0)
 											im.ManageOwnersTextEdit.SetText("")
 										},
+									},
+								},
+							},
+							Composite{
+								Layout: VBox{},
+								Children: []Widget{
+									LineEdit{
+										AssignTo: &im.OwnerFilePathEdit,
+										ReadOnly: true,
+									},
+									PushButton{
+										Text:      "选择json文件",
+										OnClicked: im.showChooseWhiteListFile,
+									},
+									PushButton{
+										Text:      "导入全局管理员",
+										OnClicked: im.importOwnerList,
 									},
 								},
 							},
@@ -297,12 +318,12 @@ func initExistUsers() error {
 			if err != nil {
 				if gorm.IsRecordNotFoundError(err) {
 					existUsers = append(existUsers, &database.User{
-						NickName: u.Name,
-						Wxid: u.Wxid,
-						GroupWxid: group.Wxid,
+						NickName:         u.Name,
+						Wxid:             u.Wxid,
+						GroupWxid:        group.Wxid,
 						InviteUserNumber: 0,
-						Alerted: false,
-						Role: database.UserRoleNormal,
+						Alerted:          false,
+						Role:             database.UserRoleNormal,
 					})
 				} else {
 					klog.Error(err)
@@ -318,4 +339,61 @@ func initExistUsers() error {
 	}
 	klog.Infof("初始化群用户成功，添加%d个新用户", len(existUsers))
 	return nil
+}
+
+func (im *InviteManager) showChooseWhiteListFile() {
+	dlg := new(walk.FileDialog)
+	dlg.Filter = "JSON Files (*.json)|*.json"
+	dlg.Title = "选择json格式文件"
+
+	if ok, err := dlg.ShowOpen(im.ParentWindow); err != nil {
+		klog.Error(err)
+	} else if !ok {
+		return
+	}
+
+	im.OwnerFilePathEdit.SetText(dlg.FilePath)
+}
+
+func (im *InviteManager) importOwnerList() {
+	if len(im.OwnerFilePathEdit.Text()) == 0 {
+		walk.MsgBox(im.ParentWindow, "错误", fmt.Sprintf("请选择json文件！"), walk.MsgBoxIconError)
+		return
+	}
+
+	fileData, err := ioutil.ReadFile(im.OwnerFilePathEdit.Text())
+	if err != nil {
+		walk.MsgBox(im.ParentWindow, "错误", fmt.Sprintf("读取json文件失败: %s！", err.Error()), walk.MsgBoxIconError)
+		return
+	}
+	data := make([]byte, 0)
+	for _, b := range fileData {
+		if b >= 32 && b <= 126 {
+			data = append(data, b)
+		}
+	}
+
+	users := make([]*database.User, 0)
+	if err := json.Unmarshal(data, &users); err != nil {
+		walk.MsgBox(im.ParentWindow, "错误", fmt.Sprintf("解析json文件失败: %s！", err.Error()), walk.MsgBoxIconError)
+		return
+	}
+
+	if len(users) == 0 {
+		walk.MsgBox(im.ParentWindow, "错误", fmt.Sprintf("解析json文件失败: %s！", "文件包含用户数为0"), walk.MsgBoxIconError)
+		return
+	}
+
+	owners := make([]config.CommonUserInfo, 0)
+	for _, u := range users {
+		owners = append(owners, config.CommonUserInfo{
+			Wxid: u.Wxid,
+			Name: u.NickName,
+		})
+	}
+
+	config.GlobalConfig.InviteMangerConf.ManageOwners = owners
+	groupsStr := utils.GetCommonUsersNameStr(config.GlobalConfig.InviteMangerConf.ManageOwners)
+	im.ManageOwnersTextEdit.SetText(groupsStr)
+	im.ManageOwnersStr = groupsStr
 }

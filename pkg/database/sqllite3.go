@@ -30,7 +30,7 @@ const (
 type User struct {
 	gorm.Model
 	GroupWxid        string `gorm:"type:varchar(72)"`
-	NickName         string `gorm:"type:varchar(255)"`
+	NickName         string `gorm:"type:varchar(255)" json:"nick_name"`
 	Wxid             string `gorm:"type:varchar(72)"`
 	InviteUserNumber int    `gorm:"type:int(10)"`
 	Alerted          bool
