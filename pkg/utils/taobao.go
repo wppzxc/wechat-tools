@@ -5,9 +5,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/wppzxc/wechat-tools/pkg/config"
-	"github.com/wppzxc/wechat-tools/pkg/types"
 	"github.com/wppzxc/wechat-tools/pkg/front"
+	"github.com/wppzxc/wechat-tools/pkg/types"
 	"io/ioutil"
 	"k8s.io/klog"
 	"net/http"
@@ -81,27 +80,42 @@ func (tbc *TaoBaoClient) CreateTaoKouLing(text string, tljUrl string) (string, e
 		return "", err
 	}
 
-	return taobaoResp.TbkTpwdCreateResponse.Data.Model, nil
+	return taobaoResp.TbkTpwdCreateResponse.Data.PasswordSimple, nil
 }
 
-func (tbc *TaoBaoClient) CreateTaoLiJinUrl(itemId string, perFace string, name string) (string, error) {
+func (tbc *TaoBaoClient) CreateTaoLiJinUrl(itemId string, perFace string, totalNum string, day string) (string, error) {
 	tbc.CommonParams.Set("method", createTaoLiJinMethod)
-	if len(name) == 0 {
-		name = defaultTaoLiJinName
+	var useStartTime string
+	var useEndTime string
+	if len(day) == 0 {
+		day = "今天"
+	}
+	switch day {
+	case "今天":
+		useStartTime = time.Now().Format("2006-01-02")
+		useEndTime = time.Now().Format("2006-01-02")
+	case "明天":
+		useStartTime = time.Now().Add(24 * time.Hour).Format("2006-01-02")
+		useEndTime = time.Now().Add(24 * time.Hour).Format("2006-01-02")
+	default:
+		return "", fmt.Errorf("不支持的时间 '%s'", day)
 	}
 	now := time.Now()
 	startTime := now.Format("2006-01-02 15:04:05")
 	endTime := now.Add(24 * time.Hour).Format("2006-01-02 15:04:05")
 	tbc.InputParams = url.Values{
-		"adzone_id":                []string{config.GlobalConfig.TaoLiJinConf.TBAdzoneID},
+		"adzone_id":                []string{front.Ct.TaoBaoAdZoneID},
 		"item_id":                  []string{itemId},
-		"total_num":                []string{config.GlobalConfig.TaoLiJinConf.TBTotalNum},
-		"name":                     []string{name},
+		"total_num":                []string{totalNum},
+		"name":                     []string{defaultTaoLiJinName},
 		"user_total_win_num_limit": []string{"1"},
 		"security_switch":          []string{"false"},
 		"per_face":                 []string{perFace},
 		"send_start_time":          []string{startTime},
 		"send_end_time":            []string{endTime},
+		"use_end_time_mode":        []string{"2"},
+		"use_start_time":           []string{useStartTime},
+		"use_end_time":             []string{useEndTime},
 	}
 
 	taobaoResp, err := tbc.sign(front.Ct.TaoBaoApiSecret).Do()

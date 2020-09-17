@@ -91,7 +91,7 @@ func (ctl *Controller) runTaoLijinworker() {
 		for _, i := range items {
 			perFace := i.ActualPrice * (i.CommissionRate / 100) * (float32(config.GlobalConfig.TaoLiJinConf.TBPerFaceRate) / 100)
 			perFaceStr := fmt.Sprintf("%.2f", perFace)
-			tljURL, err := ctl.tbClient.CreateTaoLiJinUrl(i.GoodsId, perFaceStr, "")
+			tljURL, err := ctl.tbClient.CreateTaoLiJinUrl(i.GoodsId, perFaceStr, "", "")
 			if err != nil {
 				klog.Warningf("创建淘礼金失败：%s", err)
 				continue

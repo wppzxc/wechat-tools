@@ -17,6 +17,7 @@ import (
 	"github.com/tuotoo/qrcode"
 	"github.com/wppzxc/wechat-tools/pkg/config"
 	"github.com/wppzxc/wechat-tools/pkg/database"
+	"github.com/wppzxc/wechat-tools/pkg/front"
 	"github.com/wppzxc/wechat-tools/pkg/types"
 	"github.com/wppzxc/wechat-tools/pkg/wechat"
 	"k8s.io/klog"
@@ -123,7 +124,7 @@ func TextMsgSendParam(errMsg string, toWxid string) types.SendParam {
 	sendParam := types.SendParam{
 		Api:       types.SendTextMsgApi,
 		Msg:       errMsg,
-		RobotWxid: config.GlobalConfig.LocalUser.Wxid,
+		RobotWxid: front.LocalUser.RobotWxid,
 		ToWxid:    toWxid,
 	}
 	return sendParam
@@ -244,7 +245,7 @@ func CheckWechat() error {
 
 }
 
-// GetWeChatProcessStatus 获取微信进程状态 
+// GetWeChatProcessStatus 获取微信进程状态
 func GetWeChatProcessStatus(appName string) (string, error) {
 	cmd := exec.Command("tasklist", "/V")
 	output, err := cmd.CombinedOutput()

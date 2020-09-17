@@ -49,11 +49,7 @@ const (
 	DefaultRemotePort     = "8073"
 	DefaultRemoteEndPoint = "http://127.0.0.1:8073/httpAPI"
 
-	//DefaultRemoteHost     = "152.136.224.208"
-	//DefaultRemotePort     = "8073"
-	//DefaultRemoteEndPoint = "http://152.136.224.208:8073/httpAPI"
-
-	// DefaultRemoteHost     = "172.18.47.230"
+	// DefaultRemoteHost     = "192.168.14.250"
 	// DefaultRemotePort     = "8073"
 	// DefaultRemoteEndPoint = "http://" + DefaultRemoteHost + ":" + DefaultRemotePort + "/httpAPI"
 	DefaultTimeout        = 5 * time.Second
@@ -173,7 +169,8 @@ type TaoBaoTaoKouLingResponseData struct {
 }
 
 type TaoBaoTaoKouLingResponseModelData struct {
-	Model string `json:"model"`
+	Model          string `json:"model"`
+	PasswordSimple string `json:"password_simple"`
 }
 
 type DaTaoKeResponse struct {

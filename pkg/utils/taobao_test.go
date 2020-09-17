@@ -17,7 +17,7 @@ func TestCreateTaoLiJin(t *testing.T) {
 
 	itemId := "610742526459"
 	tbc := NewTaoBaoClient()
-	sendUrl, err := tbc.CreateTaoLiJinUrl(itemId, "1", "")
+	sendUrl, err := tbc.CreateTaoLiJinUrl(itemId, "1", "1", "")
 	if err != nil {
 		fmt.Println("Failed")
 		fmt.Println(err)
@@ -37,7 +37,7 @@ func TestCreateTaoKouLing(t *testing.T) {
 
 	itemId := "610742526459"
 	tbc := NewTaoBaoClient()
-	sendUrl, err := tbc.CreateTaoLiJinUrl(itemId, "1", "")
+	sendUrl, err := tbc.CreateTaoLiJinUrl(itemId, "1", "", "")
 	if err != nil {
 		fmt.Printf("Error : %s\n", err)
 		return

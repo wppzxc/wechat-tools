@@ -341,23 +341,50 @@ func (ctl *Controller) execGroupCreateTaolijin(reqParam *types.RequestParam) err
 		return nil
 	}
 
+	var tkl string
+	var err error
+
 	// 检查是否是商品ID
-	if len(strings.TrimSpace(reqParam.Msg)) == 12 {
-		return ctl.execCreateTaolijin(reqParam.Msg, reqParam.FromWxid)
-	}
-
+	// 检查是否是商品ID,淘礼金价格,淘礼金数量,时间
 	inputs := strings.Split(reqParam.Msg, ",")
-	if len(inputs) == 4 {
-		return ctl.execCreateTaolijin(inputs[0], reqParam.FromWxid)
+	if len(strings.TrimSpace(reqParam.Msg)) == 12 {
+		tkl, err = ctl.execCreateTaolijinWithGoodsID(reqParam.Msg, reqParam.FromWxid)
+	} else if len(inputs) == 4 {
+		tkl, err = ctl.execCreateTaolijin(inputs[0], inputs[1], inputs[2], inputs[3])
+	} else {
+		err = fmt.Errorf("无法识别内容: '%s'", reqParam.Msg)
 	}
 
-	klog.Infof("发送内容不符合输入格式，跳过, '%s'", reqParam.Msg)
+	// 发送结果
+	var msg string
+	if err != nil {
+		msg = err.Error()
+	} else {
+		msg = fmt.Sprintf(front.Ct.Keywords, tkl)
+	}
+	ctl.enqueueSendMsg(utils.TextMsgSendParam(msg, reqParam.FromWxid))
 	return nil
 }
 
-func (ctl *Controller) execCreateTaolijin(goodsID string, FromWxid string) error {
+func (ctl *Controller) execCreateTaolijinWithGoodsID(goodsID string, FromWxid string) (string, error) {
 	// TODO: 实现创建淘礼金的淘口令内容
-	return nil
+	return "", nil
+}
+
+func (ctl *Controller) execCreateTaolijin(goodsID string, perFace string, totalNum string, day string) (string, error) {
+	// TODO: 实现创建淘礼金的淘口令内容
+	taolijin, err := TaobaoClient.CreateTaoLiJinUrl(goodsID, perFace, totalNum, day)
+	if err != nil {
+		klog.Error(err)
+		return "", err
+	}
+	tkl, err := TaobaoClient.CreateTaoKouLing("", taolijin)
+	if err != nil {
+		klog.Error(err)
+		return "", err
+	}
+	klog.Infof("创建淘礼金成功: %s '%s'", goodsID, tkl)
+	return tkl, nil
 }
 
 func isFromListionGroup(reqParam *types.RequestParam) bool {

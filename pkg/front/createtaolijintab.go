@@ -11,13 +11,17 @@ import (
 	"k8s.io/klog"
 )
 
+// apikey 30029015
+// apisecret b9f71d954e6a331a160c6c33956f7c44
+// adzoneid 110409800054
+
 var ListenGroups []config.CommonUserInfo
-var localUser *config.LocalUserInfo
+var LocalUser *config.LocalUserInfo
 var Ct *SendReceiver
 
 func init() {
 	ListenGroups = make([]config.CommonUserInfo, 0)
-	localUser = new(config.LocalUserInfo)
+	LocalUser = new(config.LocalUserInfo)
 }
 
 func GetCreateTaoLiJinPage(mw *walk.MainWindow) *SendReceiver {
@@ -26,10 +30,13 @@ func GetCreateTaoLiJinPage(mw *walk.MainWindow) *SendReceiver {
 		GroupUserLineEdit:   new(walk.TextEdit),
 		UsersTextEdit:       new(walk.TextEdit),
 		ShowGroupUserDlgBtn: new(walk.PushButton),
+		TaoBaoApiKey: "30029015",
+		TaoBaoApiSecret: "b9f71d954e6a331a160c6c33956f7c44",
+		TaoBaoAdZoneID: "110409800054",
 	}
 
 	Ct.MainPage = &TabPage{
-		Title:  "基础配置",
+		Title:  "淘礼金配置",
 		Layout: VBox{},
 		DataBinder: DataBinder{
 			AutoSubmit: true,
@@ -164,15 +171,15 @@ func GetCreateTaoLiJinPage(mw *walk.MainWindow) *SendReceiver {
 }
 
 func (sr *SendReceiver) showManageGoupDig() (int, error) {
-	if localUser == nil {
+	if len(LocalUser.RobotWxid) == 0 {
 		user, err := wechat.GetLocalUserInfo(0)
 		if err != nil {
 			return -1, err
 		}
-		localUser = user
+		LocalUser = user
 	}
 
-	groups, err := wechat.GetGroupList(localUser.Wxid)
+	groups, err := wechat.GetGroupList(LocalUser.Wxid)
 	if err != nil {
 		return -1, fmt.Errorf("获取群聊列表失败: %s", err)
 	}
@@ -192,8 +199,7 @@ func (sr *SendReceiver) showManageGoupDig() (int, error) {
 				OnCurrentIndexChanged: func() {
 					klog.Infof("%+v", groupsModel.groupsListBox.SelectedIndexes())
 				},
-				// 暂时禁止多选
-				// MultiSelection: true,
+				MultiSelection: true,
 			},
 			PushButton{
 				Text:      "确定",
