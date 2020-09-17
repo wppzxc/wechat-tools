@@ -197,6 +197,22 @@ func InitConfig() {
 	}
 	if conf == nil {
 		conf = new(Config)
+		conf.InviteMangerConf = &InviteManageConf{
+			ManageGroups: make([]CommonUserInfo, 0),
+			ManageOwners: make([]CommonUserInfo, 0),
+		}
+		conf.LocalUser = new(LocalUserInfo)
+		conf.SendReceiveConf = SendReceiveConf{
+			ReceiveFromGroup: make(map[string]GroupUserInfo, 0),
+			SendToUsers:      make([]CommonUserInfo, 0),
+			Keywords:         make([]string, 0),
+			FilterKeywords:   make([]string, 0),
+		}
+		conf.AutoRemoveConf = new(AutoRemoveConf)
+		conf.TaoLiJinConf = new(TaoLiJinConf)
+		conf.AutoAgreeFriendVerifyConf = &AutoAgreeFriendVerifyConf{
+			AutoInviteGroups: make([]CommonUserInfo, 0),
+		}
 	}
 	GlobalConfig = conf
 }

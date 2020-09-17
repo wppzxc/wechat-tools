@@ -98,6 +98,10 @@ func GetInviteManager(mw *walk.MainWindow) *InviteManager {
 										},
 									},
 									PushButton{
+										Text:      "选择所有群",
+										OnClicked: im.chooseAllGroups,
+									},
+									PushButton{
 										Text: "清空",
 										OnClicked: func() {
 											config.GlobalConfig.InviteMangerConf.ManageGroups = make([]config.CommonUserInfo, 0)
@@ -396,4 +400,21 @@ func (im *InviteManager) importOwnerList() {
 	groupsStr := utils.GetCommonUsersNameStr(config.GlobalConfig.InviteMangerConf.ManageOwners)
 	im.ManageOwnersTextEdit.SetText(groupsStr)
 	im.ManageOwnersStr = groupsStr
+}
+
+func (im *InviteManager) chooseAllGroups() {
+	if len(config.GlobalConfig.LocalUser.RobotWxid) == 0 {
+		if err := utils.SetLocalUserInfo(); err != nil {
+			walk.MsgBox(im.ParentWindow, "错误", fmt.Sprintf("获取登录信息失败！'%s'", err), walk.MsgBoxIconError)
+			return
+		}
+	}
+	groups, err := wechat.GetGroupList(config.GlobalConfig.LocalUser.RobotWxid)
+	if err != nil {
+		walk.MsgBox(im.ParentWindow, "错误", fmt.Sprintf("获取所有群失败！'%s'", err), walk.MsgBoxIconError)
+	}
+	config.GlobalConfig.InviteMangerConf.ManageOwners = groups
+
+	groupsStr := utils.GetCommonUsersNameStr(config.GlobalConfig.InviteMangerConf.ManageOwners)
+	im.ManageOwnersTextEdit.SetText(groupsStr)
 }
