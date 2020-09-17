@@ -4,7 +4,7 @@ import (
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
 	"github.com/wppzxc/wechat-tools/pkg/config"
-	"github.com/wppzxc/wechat-tools/pkg/utils"
+	// "github.com/wppzxc/wechat-tools/pkg/utils"
 	"k8s.io/klog"
 	"path"
 )
@@ -24,6 +24,11 @@ type SendReceiver struct {
 	TranMoneySep        bool
 	SendInterval        int
 	ActionInterval      int
+	TaoBaoApiKey        string
+	TaoBaoApiSecret     string
+	TaoBaoAdZoneID      string
+	DataokeApiKey        string
+	DataokeApiSecret     string
 }
 
 func GetSendReceiverPage(mw *walk.MainWindow) *SendReceiver {
@@ -41,8 +46,8 @@ func GetSendReceiverPage(mw *walk.MainWindow) *SendReceiver {
 		ActionInterval:      config.GlobalConfig.SendReceiveConf.ActionInterval,
 	}
 
-	sr.GroupUsers = utils.GetGroupUsersNameStr(config.GlobalConfig.SendReceiveConf.ReceiveFromGroup)
-	sr.Users = utils.GetUsersNameStr(config.GlobalConfig.SendReceiveConf.SendToUsers)
+	// sr.GroupUsers = utils.GetGroupUsersNameStr(config.GlobalConfig.SendReceiveConf.ReceiveFromGroup)
+	// sr.Users = utils.GetUsersNameStr(config.GlobalConfig.SendReceiveConf.SendToUsers)
 	if config.GlobalConfig.SendReceiveConf.ReceiveFromGroup == nil {
 		config.GlobalConfig.SendReceiveConf.ReceiveFromGroup = make(config.ReceiveFromGroup)
 	}
@@ -127,8 +132,8 @@ func GetSendReceiverPage(mw *walk.MainWindow) *SendReceiver {
 														walk.MsgBox(sr.ParentWindow, "错误", err.Error(), walk.MsgBoxIconError)
 													} else if cmd == walk.DlgCmdOK {
 														klog.Infof("dlg choose ok! groupUserInfo is %+v", config.GlobalConfig.SendReceiveConf.ReceiveFromGroup)
-														groupUsersStr := utils.GetGroupUsersNameStr(config.GlobalConfig.SendReceiveConf.ReceiveFromGroup)
-														sr.GroupUserLineEdit.SetText(groupUsersStr)
+														// groupUsersStr := utils.GetGroupUsersNameStr(config.GlobalConfig.SendReceiveConf.ReceiveFromGroup)
+														sr.GroupUserLineEdit.SetText("groupUsersStr")
 													}
 												},
 											},
@@ -171,8 +176,8 @@ func GetSendReceiverPage(mw *walk.MainWindow) *SendReceiver {
 														walk.MsgBox(sr.ParentWindow, "错误", err.Error(), walk.MsgBoxIconError)
 													} else if cmd == walk.DlgCmdOK {
 														klog.Infof("dlg choose ok! users is %+v", config.GlobalConfig.SendReceiveConf.SendToUsers)
-														userStr := utils.GetUsersNameStr(config.GlobalConfig.SendReceiveConf.SendToUsers)
-														sr.UsersTextEdit.SetText(userStr)
+														// userStr := utils.GetUsersNameStr(config.GlobalConfig.SendReceiveConf.SendToUsers)
+														sr.UsersTextEdit.SetText("userStr")
 													}
 												},
 											},

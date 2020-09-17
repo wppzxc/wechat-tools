@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/wppzxc/wechat-tools/pkg/config"
 	"github.com/wppzxc/wechat-tools/pkg/types"
+	"github.com/wppzxc/wechat-tools/pkg/front"
 	"io/ioutil"
 	"k8s.io/klog"
 	"net/http"
@@ -49,7 +50,7 @@ func NewTaoBaoClient() *TaoBaoClient {
 	startTime := now.Format("2006-01-02 15:04:05")
 	//endTime := now.Add(24 * time.Hour).Format("2006-01-02 15:04:05")
 	commonParams := url.Values{
-		"app_key":     []string{config.GlobalConfig.TaoLiJinConf.TBAppKey},
+		"app_key":     []string{front.Ct.TaoBaoApiKey},
 		"sign_method": []string{defaultSignMethod},
 		"timestamp":   []string{startTime},
 		"v":           []string{defaultTaoLiJinMethodVersion},
@@ -74,7 +75,7 @@ func (tbc *TaoBaoClient) CreateTaoKouLing(text string, tljUrl string) (string, e
 		"url":  []string{tljUrl},
 	}
 
-	taobaoResp, err := tbc.sign(config.GlobalConfig.TaoLiJinConf.TBAppSecret).Do()
+	taobaoResp, err := tbc.sign(front.Ct.TaoBaoApiSecret).Do()
 	if err != nil {
 		klog.Error(err)
 		return "", err
@@ -103,7 +104,7 @@ func (tbc *TaoBaoClient) CreateTaoLiJinUrl(itemId string, perFace string, name s
 		"send_end_time":            []string{endTime},
 	}
 
-	taobaoResp, err := tbc.sign(config.GlobalConfig.TaoLiJinConf.TBAppSecret).Do()
+	taobaoResp, err := tbc.sign(front.Ct.TaoBaoApiSecret).Do()
 	if err != nil {
 		klog.Error(err)
 		return "", err

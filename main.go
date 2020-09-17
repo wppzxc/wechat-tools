@@ -1,12 +1,9 @@
 package main
 
 import (
-	"context"
 	"flag"
-	"fmt"
 	"image"
 	"os"
-	"time"
 
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
@@ -17,7 +14,6 @@ import (
 	"github.com/wppzxc/wechat-tools/pkg/prometheus"
 	"github.com/wppzxc/wechat-tools/pkg/utils"
 	"github.com/wppzxc/wechat-tools/version"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
 )
@@ -84,15 +80,15 @@ func main() {
 	}()
 
 	// 启动 metrics 状态检查
-	go wait.Until(healthCheck, 60*time.Second, context.Background().Done())
+	// go wait.Until(healthCheck, 60*time.Second, context.Background().Done())
 
 	config.InitConfig()
 
-	mw.sendReceiveTab = front.GetSendReceiverPage(mw.mainView)
-	mw.inviteManagerTab = front.GetInviteManager(mw.mainView)
-	mw.taoLiJinTab = front.GetTaoLiJinPage(mw.mainView)
-	mw.autoRemoverTab = front.GetAutoRemoverPage(mw.mainView)
-	mw.autoAgreeFriendTab = front.GetAutoAgreeFriendVerifyManager(mw.mainView)
+	// mw.sendReceiveTab = front.GetSendReceiverPage(mw.mainView)
+	// mw.inviteManagerTab = front.GetInviteManager(mw.mainView)
+	// mw.taoLiJinTab = front.GetTaoLiJinPage(mw.mainView)
+	// mw.autoRemoverTab = front.GetAutoRemoverPage(mw.mainView)
+	// mw.autoAgreeFriendTab = front.GetAutoAgreeFriendVerifyManager(mw.mainView)
 	mw.createTaolijinTab = front.GetCreateTaoLiJinPage(mw.mainView)
 
 	icon, _ := walk.NewIconFromImageForDPI(icon, 96)
@@ -145,13 +141,13 @@ func getMainTitle() string {
 func (m *mainView) start() {
 	klog.Info("wechat-tools 开始工作...")
 	// 获取用户信息
-	klog.Info("获取登录信息")
-	if config.GlobalConfig.LocalUser == nil {
-		if err := utils.SetLocalUserInfo(); err != nil {
-			walk.MsgBox(m.mainView, "错误", err.Error(), walk.MsgBoxIconError)
-			return
-		}
-	}
+	// klog.Info("获取登录信息")
+	// if config.GlobalConfig.LocalUser == nil {
+	// 	if err := utils.SetLocalUserInfo(); err != nil {
+	// 		walk.MsgBox(m.mainView, "错误", err.Error(), walk.MsgBoxIconError)
+	// 		return
+	// 	}
+	// }
 
 	// 检查参数是否正确
 	klog.Info("校验群消息转发启动参数")
@@ -170,19 +166,23 @@ func (m *mainView) start() {
 	// 初始化消息队列
 	m.httpController.SetNewWorkqueue(workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()))
 	// 初始化动作队列
-	m.httpController.SetNewActionqueue(workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()))
+	// m.httpController.SetNewActionqueue(workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter()))
 
 	// 初始化强制邀请数据数据，如：全局管理员和群成员
-	if err := front.InitInviteData(); err != nil {
-		walk.MsgBox(m.mainView, "错误", fmt.Sprintf("初始化群邀请数据失败： %s", err.Error()), walk.MsgBoxIconError)
-		return
-	}
+	// if err := front.InitInviteData(); err != nil {
+	// 	walk.MsgBox(m.mainView, "错误", fmt.Sprintf("初始化群邀请数据失败： %s", err.Error()), walk.MsgBoxIconError)
+	// 	return
+	// }
 
 	// 初始化数群监控数据数据
-	if err := m.httpController.InitSendReceiveDatabase(); err != nil {
-		walk.MsgBox(m.mainView, "错误", fmt.Sprintf("初始化群监控数据失败： %s", err.Error()), walk.MsgBoxIconError)
-		return
-	}
+	// if err := m.httpController.InitSendReceiveDatabase(); err != nil {
+	// 	walk.MsgBox(m.mainView, "错误", fmt.Sprintf("初始化群监控数据失败： %s", err.Error()), walk.MsgBoxIconError)
+	// 	return
+	// }
+
+	// 初始话淘宝client
+	controller.TaobaoClient = utils.NewTaoBaoClient()
+	controller.DataokeClient = utils.NewDataokeClient()
 
 	m.setUIEnable(false)
 	m.stopCh = make(chan struct{})
@@ -191,17 +191,17 @@ func (m *mainView) start() {
 	// 开启发微信消息任务线程
 	go m.httpController.StartMsgSendWork(m.stopCh)
 	// 开启发微信动作任务线程
-	go m.httpController.StartActionSendWork(m.stopCh)
+	// go m.httpController.StartActionSendWork(m.stopCh)
 
 	// 开启强制邀请任务线程
-	if config.GlobalConfig.InviteMangerConf.Start {
-		go m.httpController.StartInviteManger(m.stopCh)
-	}
+	// if config.GlobalConfig.InviteMangerConf.Start {
+	// 	go m.httpController.StartInviteManger(m.stopCh)
+	// }
 
 	// 开启淘礼金任务线程
-	if config.GlobalConfig.TaoLiJinConf.Start {
-		go m.httpController.StartTaoLiJinWorker(m.stopCh)
-	}
+	// if config.GlobalConfig.TaoLiJinConf.Start {
+	// 	go m.httpController.StartTaoLiJinWorker(m.stopCh)
+	// }
 
 }
 

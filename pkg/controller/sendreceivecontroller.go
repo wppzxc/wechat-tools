@@ -80,21 +80,21 @@ func NewController() *Controller {
 	e.Use(middleware.LoggerWithConfig(log.DefaultLogConfig))
 	e.Use(middleware.Recover())
 
-	db := database.InitDB()
+	// db := database.InitDB()
 
 	controller := &Controller{
 		Echo:              e,
-		DB:                db,
+		// DB:                db,
 		taolijinSendItems: make(map[string]types.DaTaoKeItem, 0),
 		taolijinRunHours:  0,
 		taolijinNowHour:   time.Now().Hour(),
 		agreeLock:         new(sync.Mutex),
 	}
 	controller.Echo = e
-	controller.DB = db
+	// controller.DB = db
 
 	controller.Echo.POST("/receive", controller.server)
-	controller.Echo.GET("/roles/:role/users", controller.getUsers)
+	// controller.Echo.GET("/roles/:role/users", controller.getUsers)
 	return controller
 }
 

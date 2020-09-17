@@ -7,7 +7,7 @@ import (
 	. "github.com/lxn/walk/declarative"
 	"github.com/wppzxc/wechat-tools/pkg/config"
 	"github.com/wppzxc/wechat-tools/pkg/database"
-	"github.com/wppzxc/wechat-tools/pkg/utils"
+	// "github.com/wppzxc/wechat-tools/pkg/utils"
 	"github.com/wppzxc/wechat-tools/pkg/wechat"
 	"k8s.io/klog"
 	"os/exec"
@@ -34,8 +34,8 @@ func GetInviteManager(mw *walk.MainWindow) *InviteManager {
 		config.GlobalConfig.InviteMangerConf = new(config.InviteManageConf)
 	}
 
-	im.ManageGroupsStr = utils.GetUsersNameStr(config.GlobalConfig.InviteMangerConf.ManageGroups)
-	im.ManageOwnersStr = utils.GetUsersNameStr(config.GlobalConfig.InviteMangerConf.ManageOwners)
+	// im.ManageGroupsStr = utils.GetUsersNameStr(config.GlobalConfig.InviteMangerConf.ManageGroups)
+	// im.ManageOwnersStr = utils.GetUsersNameStr(config.GlobalConfig.InviteMangerConf.ManageOwners)
 
 	im.MainPage = &TabPage{
 		Title:  "群管功能设置",
@@ -90,8 +90,8 @@ func GetInviteManager(mw *walk.MainWindow) *InviteManager {
 												walk.MsgBox(im.ParentWindow, "错误", err.Error(), walk.MsgBoxIconError)
 											} else if cmd == walk.DlgCmdOK {
 												klog.Infof("dlg choose ok! manageGroups is %+v", config.GlobalConfig.InviteMangerConf.ManageGroups)
-												groupsStr := utils.GetCommonUsersNameStr(config.GlobalConfig.InviteMangerConf.ManageGroups)
-												im.ManageGroupsTextEdit.SetText(groupsStr)
+												// groupsStr := utils.GetCommonUsersNameStr(config.GlobalConfig.InviteMangerConf.ManageGroups)
+												im.ManageGroupsTextEdit.SetText("groupsStr")
 											}
 										},
 									},
@@ -136,8 +136,8 @@ func GetInviteManager(mw *walk.MainWindow) *InviteManager {
 												walk.MsgBox(im.ParentWindow, "错误", err.Error(), walk.MsgBoxIconError)
 											} else if cmd == walk.DlgCmdOK {
 												klog.Infof("dlg choose ok! manageOwners is %+v", config.GlobalConfig.InviteMangerConf.ManageOwners)
-												groupsStr := utils.GetCommonUsersNameStr(config.GlobalConfig.InviteMangerConf.ManageOwners)
-												im.ManageOwnersTextEdit.SetText(groupsStr)
+												// groupsStr := utils.GetCommonUsersNameStr(config.GlobalConfig.InviteMangerConf.ManageOwners)
+												im.ManageOwnersTextEdit.SetText("groupsStr")
 											}
 										},
 									},

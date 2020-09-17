@@ -58,46 +58,46 @@ func getRequestParams(c echo.Context) *types.RequestParam {
 
 // 处理不通的消息类型
 func (ctl *Controller) doForward(reqParam *types.RequestParam) error {
-	var execute = false
-	defer func() {
-		if execute {
-			prometheus.ExecuteMsgs.Inc()
-		}
-	}()
+	// var execute = false
+	// defer func() {
+	// 	if execute {
+	// 		prometheus.ExecuteMsgs.Inc()
+	// 	}
+	// }()
 
 	// 处理群成员增减消息
-	if reqParam.Event == types.EventGroupMemberAdd || reqParam.Event == types.EventGroupMemberDecrease {
-		execute = true
-		return ctl.execGroupMemberChange(reqParam)
-	}
+	// if reqParam.Event == types.EventGroupMemberAdd || reqParam.Event == types.EventGroupMemberDecrease {
+	// 	execute = true
+	// 	return ctl.execGroupMemberChange(reqParam)
+	// }
 
 	// 处理群消息
 	if reqParam.Event == types.EventGroupMsg {
-		execute = true
+		// execute = true
 		// return ctl.execGroupMsg(reqParam)
 		// 处理创建淘礼金消息
 		return ctl.execGroupCreateTaolijin(reqParam)
 	}
 
-	// 处理私聊消息
-	if reqParam.Event == types.EventFriendMsg {
-		execute = true
-		return ctl.execFriendMsg(reqParam)
-	}
+	// // 处理私聊消息
+	// if reqParam.Event == types.EventFriendMsg {
+	// 	execute = true
+	// 	return ctl.execFriendMsg(reqParam)
+	// }
 
 	// 处理好友请求
-	if reqParam.Event == types.EventFriendVerify {
-		execute = true
-		go func(reqParams *types.RequestParam) {
-			if err := ctl.execFriendVerify(reqParam); err != nil {
-				klog.Error(err)
-				prometheus.AgreeFailedUsers.Inc()
-				return
-			}
-			prometheus.AgreeSuccessUsers.Inc()
-		}(reqParam)
-		return nil
-	}
+	// if reqParam.Event == types.EventFriendVerify {
+	// 	execute = true
+	// 	go func(reqParams *types.RequestParam) {
+	// 		if err := ctl.execFriendVerify(reqParam); err != nil {
+	// 			klog.Error(err)
+	// 			prometheus.AgreeFailedUsers.Inc()
+	// 			return
+	// 		}
+	// 		prometheus.AgreeSuccessUsers.Inc()
+	// 	}(reqParam)
+	// 	return nil
+	// }
 
 	// 其他类型不处理
 	klog.Infof("unknown msg request : %+v", reqParam)

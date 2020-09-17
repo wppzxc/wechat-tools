@@ -2,17 +2,18 @@ package front
 
 import (
 	"fmt"
+	"path"
 
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
 	"github.com/wppzxc/wechat-tools/pkg/config"
-	"github.com/wppzxc/wechat-tools/pkg/utils"
 	"github.com/wppzxc/wechat-tools/pkg/wechat"
 	"k8s.io/klog"
 )
 
 var ListenGroups []config.CommonUserInfo
 var localUser *config.LocalUserInfo
+var Ct *SendReceiver
 
 func init() {
 	ListenGroups = make([]config.CommonUserInfo, 0)
@@ -20,25 +21,85 @@ func init() {
 }
 
 func GetCreateTaoLiJinPage(mw *walk.MainWindow) *SendReceiver {
-	ct := &SendReceiver{
+	Ct = &SendReceiver{
 		ParentWindow:        mw,
 		GroupUserLineEdit:   new(walk.TextEdit),
 		UsersTextEdit:       new(walk.TextEdit),
 		ShowGroupUserDlgBtn: new(walk.PushButton),
 	}
 
-	ct.MainPage = &TabPage{
+	Ct.MainPage = &TabPage{
 		Title:  "基础配置",
 		Layout: VBox{},
 		DataBinder: DataBinder{
 			AutoSubmit: true,
-			DataSource: ct,
+			DataSource: Ct,
 		},
 		Children: []Widget{
 			Composite{
 				Layout: VBox{},
 				Children: []Widget{
 					HSpacer{},
+					Composite{
+						Layout: VBox{},
+						Children: []Widget{
+							Composite{
+								Layout: HBox{},
+								Children: []Widget{
+									Label{
+										Text: "大淘客API KEY",
+									},
+									LineEdit{
+										Text: Bind("DataokeApiKey"),
+									},
+								},
+							},
+							Composite{
+								Layout: HBox{},
+								Children: []Widget{
+									Label{
+										Text: "大淘客API SECRET",
+									},
+									LineEdit{
+										Text: Bind("DataokeApiSecret"),
+									},
+								},
+							},
+							Composite{
+								Layout: HBox{},
+								Children: []Widget{
+									Label{
+										Text: "淘宝API KEY",
+									},
+									LineEdit{
+										Text: Bind("TaoBaoApiKey"),
+									},
+								},
+							},
+							Composite{
+								Layout: HBox{},
+								Children: []Widget{
+									Label{
+										Text: "淘宝API SECRET",
+									},
+									LineEdit{
+										Text: Bind("TaoBaoApiSecret"),
+									},
+								},
+							},
+							Composite{
+								Layout: HBox{},
+								Children: []Widget{
+									Label{
+										Text: "淘宝API AdzoneID",
+									},
+									LineEdit{
+										Text: Bind("TaoBaoAdZoneID"),
+									},
+								},
+							},
+						},
+					},
 					Composite{
 						Layout: VBox{},
 						Children: []Widget{
@@ -61,7 +122,7 @@ func GetCreateTaoLiJinPage(mw *walk.MainWindow) *SendReceiver {
 								Layout: HBox{},
 								Children: []Widget{
 									TextEdit{
-										AssignTo: &ct.GroupUserLineEdit,
+										AssignTo: &Ct.GroupUserLineEdit,
 										Text:     Bind("GroupUsers"),
 										ReadOnly: true,
 									},
@@ -70,14 +131,14 @@ func GetCreateTaoLiJinPage(mw *walk.MainWindow) *SendReceiver {
 										Children: []Widget{
 											PushButton{
 												Text:     "添加",
-												AssignTo: &ct.ShowGroupUserDlgBtn,
+												AssignTo: &Ct.ShowGroupUserDlgBtn,
 												OnClicked: func() {
-													if cmd, err := ct.showManageGoupDig(); err != nil {
-														walk.MsgBox(ct.ParentWindow, "错误", err.Error(), walk.MsgBoxIconError)
+													if cmd, err := Ct.showManageGoupDig(); err != nil {
+														walk.MsgBox(Ct.ParentWindow, "错误", err.Error(), walk.MsgBoxIconError)
 													} else if cmd == walk.DlgCmdOK {
 														klog.Infof("dlg choose ok! groupUserInfo is %+v", ListenGroups)
-														groupUsersStr := utils.GetCommonUsersNameStr(ListenGroups)
-														ct.GroupUserLineEdit.SetText(groupUsersStr)
+														groupUsersStr := GetCommonUsersNameStr(ListenGroups)
+														Ct.GroupUserLineEdit.SetText(groupUsersStr)
 													}
 												},
 											},
@@ -85,7 +146,7 @@ func GetCreateTaoLiJinPage(mw *walk.MainWindow) *SendReceiver {
 												Text: "清除",
 												OnClicked: func() {
 													ListenGroups = make([]config.CommonUserInfo, 0)
-													ct.GroupUserLineEdit.SetText("")
+													Ct.GroupUserLineEdit.SetText("")
 												},
 											},
 										},
@@ -99,7 +160,7 @@ func GetCreateTaoLiJinPage(mw *walk.MainWindow) *SendReceiver {
 		},
 	}
 
-	return ct
+	return Ct
 }
 
 func (sr *SendReceiver) showManageGoupDig() (int, error) {
@@ -148,4 +209,13 @@ func (c *commonUserInfoModel) localCommitGroups() {
 	for _, index := range groupIndexes {
 		ListenGroups = append(ListenGroups, c.items[index])
 	}
+}
+
+// GetCommonUsersNameStr 根据群组列表获取群组名字字符串
+func GetCommonUsersNameStr(groups []config.CommonUserInfo) string {
+	result := ""
+	for _, g := range groups {
+		result = path.Join(result, fmt.Sprintf("%s(%s)", g.Name, g.Wxid))
+	}
+	return result
 }

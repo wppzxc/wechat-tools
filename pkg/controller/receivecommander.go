@@ -16,6 +16,9 @@ import (
 	"k8s.io/klog"
 )
 
+var TaobaoClient *utils.TaoBaoClient
+var DataokeClient *utils.DaTaoKeClient
+
 func (ctl *Controller) execManagerReq(reqParam *types.RequestParam) error {
 	_, _, msg, _ := utils.IsAtMsg(reqParam.Msg)
 	switch msg {
@@ -334,7 +337,7 @@ func (ctl *Controller) SetUserInviteNum(reqParam *types.RequestParam) error {
 func (ctl *Controller) execGroupCreateTaolijin(reqParam *types.RequestParam) error {
 	// 检查是否是监听的群组
 	if !isFromListionGroup(reqParam) {
-		klog.Infof("not from listen group, return")
+		klog.Infof("群组未监听, 跳过")
 		return nil
 	}
 

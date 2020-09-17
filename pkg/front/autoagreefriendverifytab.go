@@ -4,7 +4,7 @@ import (
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
 	"github.com/wppzxc/wechat-tools/pkg/config"
-	"github.com/wppzxc/wechat-tools/pkg/utils"
+	// "github.com/wppzxc/wechat-tools/pkg/utils"
 	"k8s.io/klog"
 )
 
@@ -26,7 +26,7 @@ func GetAutoAgreeFriendVerifyManager(mw *walk.MainWindow) *AutoAgreeFriendVerify
 		config.GlobalConfig.AutoAgreeFriendVerifyConf = new(config.AutoAgreeFriendVerifyConf)
 	}
 
-	am.AutoInviteGroupsStr = utils.GetUsersNameStr(config.GlobalConfig.AutoAgreeFriendVerifyConf.AutoInviteGroups)
+	// am.AutoInviteGroupsStr = utils.GetUsersNameStr(config.GlobalConfig.AutoAgreeFriendVerifyConf.AutoInviteGroups)
 
 	am.MainPage = &TabPage{
 		Title: "自动通过好友请求",
@@ -81,8 +81,8 @@ func GetAutoAgreeFriendVerifyManager(mw *walk.MainWindow) *AutoAgreeFriendVerify
 												walk.MsgBox(am.ParentWindow, "错误", err.Error(), walk.MsgBoxIconError)
 											} else if cmd == walk.DlgCmdOK {
 												klog.Infof("dlg choose ok! manageGroups is %+v", config.GlobalConfig.AutoAgreeFriendVerifyConf.AutoInviteGroups)
-												groupsStr := utils.GetCommonUsersNameStr(config.GlobalConfig.AutoAgreeFriendVerifyConf.AutoInviteGroups)
-												am.AutoInviteGroupsTextEdit.SetText(groupsStr)
+												// groupsStr := utils.GetCommonUsersNameStr(config.GlobalConfig.AutoAgreeFriendVerifyConf.AutoInviteGroups)
+												am.AutoInviteGroupsTextEdit.SetText("groupsStr")
 											}
 										},
 									},

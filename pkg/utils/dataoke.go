@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/wppzxc/wechat-tools/pkg/config"
+	"github.com/wppzxc/wechat-tools/pkg/front"
 	"github.com/wppzxc/wechat-tools/pkg/types"
 	"io/ioutil"
 	"k8s.io/klog"
@@ -39,7 +39,7 @@ type DaTaoKeClient struct {
 
 func NewDataokeClient() *DaTaoKeClient {
 	commonParams := url.Values{
-		"appKey":  []string{config.GlobalConfig.TaoLiJinConf.DTKAppKey},
+		"appKey":  []string{front.Ct.DataokeApiKey},
 		"version": []string{defaultDataokeApiVersion},
 	}
 	dtkClient := DaTaoKeClient{
@@ -56,7 +56,7 @@ func (dtk *DaTaoKeClient) GetRealTimeListItem() ([]types.DaTaoKeItem, error) {
 	dtk.InputParams = url.Values{
 		"rankType": []string{RankTypeRealTimeList},
 	}
-	dataokeResp, err := dtk.sign(config.GlobalConfig.TaoLiJinConf.DTKAppSecret).do()
+	dataokeResp, err := dtk.sign(front.Ct.DataokeApiSecret).do()
 	if err != nil {
 		klog.Error(err)
 		return nil, err
