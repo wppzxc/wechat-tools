@@ -180,6 +180,13 @@ type DaTaoKeResponse struct {
 	Data []DaTaoKeItem
 }
 
+type DaTaoKeGoodsDetailResponse struct {
+	Time int64
+	Code int
+	Msg  string
+	Data DaTaoKeItem
+}
+
 //id 				Number 	19259135 						商品id，在大淘客的商品id
 //goodsId 			Number 	590858626868 					淘宝商品id
 //ranking 			Number 	1 								榜单名次

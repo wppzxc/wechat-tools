@@ -14,8 +14,9 @@ import (
 )
 
 const (
-	defaultDataokeApiVersion = "v1.2.2"
-	defaultGetRankingListUrl = "https://openapi.dataoke.com/api/goods/get-ranking-list"
+	defaultDataokeAPIVersion = "v1.2.3"
+	defaultGetRankingListURL = "https://openapi.dataoke.com/api/goods/get-ranking-list"
+	defaultGetGoodsDetailURL = "https://openapi.dataoke.com/api/goods/get-goods-details"
 )
 
 // 榜单类型，1.实时榜 2.全天榜 3.热推榜 4.复购榜 5.热词飙升榜 6.热词排行榜 7.综合热搜榜
@@ -40,7 +41,7 @@ type DaTaoKeClient struct {
 func NewDataokeClient() *DaTaoKeClient {
 	commonParams := url.Values{
 		"appKey":  []string{front.Ct.DataokeApiKey},
-		"version": []string{defaultDataokeApiVersion},
+		"version": []string{defaultDataokeAPIVersion},
 	}
 	dtkClient := DaTaoKeClient{
 		CommonParams: commonParams,
@@ -52,7 +53,7 @@ func NewDataokeClient() *DaTaoKeClient {
 }
 
 func (dtk *DaTaoKeClient) GetRealTimeListItem() ([]types.DaTaoKeItem, error) {
-	dtk.ReqUrl = defaultGetRankingListUrl
+	dtk.ReqUrl = defaultGetRankingListURL
 	dtk.InputParams = url.Values{
 		"rankType": []string{RankTypeRealTimeList},
 	}
@@ -62,6 +63,19 @@ func (dtk *DaTaoKeClient) GetRealTimeListItem() ([]types.DaTaoKeItem, error) {
 		return nil, err
 	}
 	return dataokeResp.Data, nil
+}
+
+func (dtk *DaTaoKeClient) GetGoodsInfo(goodsID string) (*types.DaTaoKeItem, error) {
+	dtk.ReqUrl = defaultGetGoodsDetailURL
+	dtk.InputParams = url.Values{
+		"goodsId": []string{goodsID},
+	}
+	dataokeResp, err := dtk.sign(front.Ct.DataokeApiSecret).doGetGoodsDetail()
+	if err != nil {
+		klog.Error(err)
+		return nil, err
+	}
+	return &dataokeResp.Data, nil
 }
 
 func (dtk *DaTaoKeClient) sign(secret string) *DaTaoKeClient {
@@ -107,6 +121,38 @@ func (dtk *DaTaoKeClient) do() (*types.DaTaoKeResponse, error) {
 	}
 
 	respData := new(types.DaTaoKeResponse)
+	if err := json.Unmarshal(data, respData); err != nil {
+		klog.Error(err)
+		return nil, err
+	}
+
+	return respData, nil
+}
+
+func (dtk *DaTaoKeClient) doGetGoodsDetail() (*types.DaTaoKeGoodsDetailResponse, error) {
+	params := url.Values{}
+	for k, v := range dtk.CommonParams {
+		params.Set(k, v[0])
+	}
+	for k, v := range dtk.InputParams {
+		params.Set(k, v[0])
+	}
+	params.Set("sign", dtk.Sign)
+	reqUrl := fmt.Sprintf("%s?%s", dtk.ReqUrl, params.Encode())
+
+	resp, err := dtk.Client.Get(reqUrl)
+	if err != nil {
+		klog.Error(err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		klog.Error(err)
+		return nil, err
+	}
+
+	respData := new(types.DaTaoKeGoodsDetailResponse)
 	if err := json.Unmarshal(data, respData); err != nil {
 		klog.Error(err)
 		return nil, err

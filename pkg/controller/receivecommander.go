@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -341,16 +342,22 @@ func (ctl *Controller) execGroupCreateTaolijin(reqParam *types.RequestParam) err
 		return nil
 	}
 
+	var goodsID string
 	var tkl string
+	var dTitle string
+	var userPrice string
 	var err error
 
 	// 检查是否是商品ID
 	// 检查是否是商品ID,淘礼金价格,淘礼金数量,时间
-	inputs := strings.Split(reqParam.Msg, ",")
-	if len(strings.TrimSpace(reqParam.Msg)) == 12 {
-		tkl, err = ctl.execCreateTaolijinWithGoodsID(reqParam.Msg, reqParam.FromWxid)
+	inputMsg := strings.Replace(reqParam.Msg, "，", ",", -1)
+	inputs := strings.Split(inputMsg, ",")
+	if len(strings.TrimSpace(inputMsg)) == 12 {
+		goodsID = inputMsg
+		tkl, err = ctl.execCreateTaolijinWithGoodsID(goodsID, reqParam.FromWxid)
 	} else if len(inputs) == 4 {
-		tkl, err = ctl.execCreateTaolijin(inputs[0], inputs[1], inputs[2], inputs[3])
+		goodsID = inputs[0]
+		tkl, err = ctl.execCreateTaolijin(goodsID, inputs[1], inputs[2], inputs[3])
 	} else {
 		err = fmt.Errorf("无法识别内容: '%s'", reqParam.Msg)
 	}
@@ -360,7 +367,23 @@ func (ctl *Controller) execGroupCreateTaolijin(reqParam *types.RequestParam) err
 	if err != nil {
 		msg = err.Error()
 	} else {
-		msg = fmt.Sprintf(front.Ct.Keywords, tkl)
+		tkl = utils.TranMoneySep(tkl)
+		msg = strings.Replace(front.Ct.Keywords, "_T_", tkl, -1)
+		data, err := DataokeClient.GetGoodsInfo(goodsID)
+		if err != nil {
+			dTitle = ""
+			klog.Errorf("获取短标题失败", err)
+		} else {
+			dTitle = data.DTitle
+		}
+		f, err := strconv.ParseFloat(inputs[1], 32)
+		if err != nil {
+			userPrice = "-"
+		} else {
+			userPrice = fmt.Sprintf("%.2f", data.ActualPrice-float32(f))
+		}
+		msg = strings.Replace(msg, "_D_", dTitle, -1)
+		msg = strings.Replace(msg, "_P_", userPrice, -1)
 	}
 	ctl.enqueueSendMsg(utils.TextMsgSendParam(msg, reqParam.FromWxid))
 	return nil

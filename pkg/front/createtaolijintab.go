@@ -30,9 +30,17 @@ func GetCreateTaoLiJinPage(mw *walk.MainWindow) *SendReceiver {
 		GroupUserLineEdit:   new(walk.TextEdit),
 		UsersTextEdit:       new(walk.TextEdit),
 		ShowGroupUserDlgBtn: new(walk.PushButton),
-		TaoBaoApiKey: "30029015",
-		TaoBaoApiSecret: "b9f71d954e6a331a160c6c33956f7c44",
-		TaoBaoAdZoneID: "110409800054",
+		TaoBaoApiKey:        "30029015",
+		TaoBaoApiSecret:     "b9f71d954e6a331a160c6c33956f7c44",
+		TaoBaoAdZoneID:      "110409800054",
+		Keywords: `来了
+		_D_
+		淘口令来了
+		_T_
+		实付金额_P_
+		拍后发已拍`,
+		DataokeApiKey:    "5e9d2dbadc286",
+		DataokeApiSecret: "8f3c81484fdf7bd2695ddbbc6a128201",
 	}
 
 	Ct.MainPage = &TabPage{
@@ -111,7 +119,7 @@ func GetCreateTaoLiJinPage(mw *walk.MainWindow) *SendReceiver {
 						Layout: VBox{},
 						Children: []Widget{
 							Label{
-								Text: "设置文案格式(淘口令用 %s 代替)",
+								Text: "设置文案格式(短标题用 _D_ 代替，淘口令用 _T_ 代替，购买价用_P_代替)",
 							},
 							TextEdit{
 								// 借用 keywords 来保存文案格式
