@@ -34,6 +34,8 @@ type appConfig struct {
 	TaobaoAppSecret      string
 	TaobaoAdzongID       string
 	CheckTaoLiJin        bool
+	FinalCostBegin       float64
+	FinalCostEnd         float64
 }
 
 const (
@@ -187,6 +189,27 @@ func main() {
 					},
 				},
 			},
+			Composite{
+				Layout: HBox{},
+				Children: []Widget{
+					Label{
+						Text: "实际成本范围",
+					},
+					NumberEdit{
+						Value:    Bind("FinalCostBegin", Range{0, 99}),
+						Decimals: 2,
+						Prefix:   "￥",
+					},
+					Label{
+						Text: "~",
+					},
+					NumberEdit{
+						Value:    Bind("FinalCostEnd", Range{0, 99}),
+						Decimals: 2,
+						Prefix:   "￥",
+					},
+				},
+			},
 			// Composite{
 			// 	Layout: HBox{},
 			// 	Children: []Widget{
@@ -288,13 +311,22 @@ func work() {
 					}
 					klog.Infof("商品 %s:%s 可以创建淘礼金!", item.DTitle, item.GoodsId)
 				}
-				klog.Infof("发送消息到钉钉")
-				if err := alertDingding(item); err != nil {
-					klog.Error(err)
-					errorMsg.SetText(fmt.Sprintf("错误(%s): 拉取大淘客商品信息失败: %s", time.Now().Format("2006-01-02 15:04:05"), err))
-					continue
+
+				//  到手佣金 = 券后价*佣金比例*90%
+				finalCommisson := item.ActualPrice * (item.CommissionRate / 100) * 0.9
+				//  到手成本（实际成本） = 券后价-到手佣金
+				finalCost := item.ActualPrice - finalCommisson
+				klog.Infof("商品: %s 实际成本为 %.2f", item.GoodsId, finalCost)
+				// 实际成本是否符合
+				if finalCost >= float32(config.FinalCostBegin) && finalCost <= float32(config.FinalCostEnd) {
+					klog.Infof("发送消息到钉钉")
+					if err := alertDingding(item); err != nil {
+						klog.Error(err)
+						errorMsg.SetText(fmt.Sprintf("错误(%s): 拉取大淘客商品信息失败: %s", time.Now().Format("2006-01-02 15:04:05"), err))
+						continue
+					}
+					klog.Info("发送成功")
 				}
-				klog.Info("发送成功")
 			}
 		}
 	}
@@ -309,7 +341,7 @@ func alertDingding(item DaTaoKeItem) error {
 	}`
 
 	content := `大淘客发现最新的高佣商品
-	1，商品链接: %s
+	1，商品ID: %s
 	2，短标题: %s
 	3，券后价: %.2f
 	4，佣金比例: %.2f
@@ -325,10 +357,10 @@ func alertDingding(item DaTaoKeItem) error {
 	}
 	//  到手佣金 = 券后价*佣金比例*90%
 	finalCommisson := item.ActualPrice * (item.CommissionRate / 100) * 0.9
-	//  到手成本 = 券后价-到手佣金
+	//  到手成本（实际成本） = 券后价-到手佣金
 	finalCost := item.ActualPrice - finalCommisson
 	contentText := fmt.Sprintf(content,
-		item.ItemLink,
+		item.GoodsId,
 		item.DTitle,
 		item.ActualPrice,
 		item.CommissionRate,
@@ -516,7 +548,7 @@ func (dtk *DaTaoKeClient) do() (*DaTaoKeResponse, error) {
 		klog.Error(err)
 		return nil, err
 	}
-	klog.Info(string(data))
+	// klog.Info(string(data))
 
 	respData := new(DaTaoKeResponse)
 	if err := json.Unmarshal(data, respData); err != nil {
