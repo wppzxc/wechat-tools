@@ -36,6 +36,8 @@ type appConfig struct {
 	CheckTaoLiJin        bool
 	FinalCostBegin       float64
 	FinalCostEnd         float64
+	FinalCommissonBegin  float64
+	FinalCommissonEnd    float64
 }
 
 const (
@@ -193,6 +195,27 @@ func main() {
 				Layout: HBox{},
 				Children: []Widget{
 					Label{
+						Text: "到手佣金",
+					},
+					NumberEdit{
+						Value:    Bind("FinalCommissonBegin", Range{0, 99}),
+						Decimals: 2,
+						Prefix:   "￥",
+					},
+					Label{
+						Text: "~",
+					},
+					NumberEdit{
+						Value:    Bind("FinalCommissonEnd", Range{0, 99}),
+						Decimals: 2,
+						Prefix:   "￥",
+					},
+				},
+			},
+			Composite{
+				Layout: HBox{},
+				Children: []Widget{
+					Label{
 						Text: "实际成本范围",
 					},
 					NumberEdit{
@@ -312,21 +335,28 @@ func work() {
 					klog.Infof("商品 %s:%s 可以创建淘礼金!", item.DTitle, item.GoodsId)
 				}
 
+				// 校验到手佣金是否合适
 				//  到手佣金 = 券后价*佣金比例*90%
 				finalCommisson := item.ActualPrice * (item.CommissionRate / 100) * 0.9
+				if float64(finalCommisson) < config.FinalCommissonBegin || float64(finalCommisson) > config.FinalCommissonEnd {
+					klog.Warningf("到手佣金不合适 %.2f, < %.2f, > %.2f", finalCommisson, config.FinalCommissonBegin, config.FinalCommissonEnd)
+					continue
+				}
 				//  到手成本（实际成本） = 券后价-到手佣金
 				finalCost := item.ActualPrice - finalCommisson
 				klog.Infof("商品: %s 实际成本为 %.2f", item.GoodsId, finalCost)
-				// 实际成本是否符合
-				if finalCost >= float32(config.FinalCostBegin) && finalCost <= float32(config.FinalCostEnd) {
-					klog.Infof("发送消息到钉钉")
-					if err := alertDingding(item); err != nil {
-						klog.Error(err)
-						errorMsg.SetText(fmt.Sprintf("错误(%s): 拉取大淘客商品信息失败: %s", time.Now().Format("2006-01-02 15:04:05"), err))
-						continue
-					}
-					klog.Info("发送成功")
+				// 校验实际成本是否符合
+				if finalCost < float32(config.FinalCostBegin) || finalCost > float32(config.FinalCostEnd) {
+					klog.Warningf("实际成本不合适 %.2f, < %.2f, > %.2f", finalCommisson, config.FinalCommissonBegin, config.FinalCommissonEnd)
+					continue
 				}
+				klog.Infof("发送消息到钉钉")
+				if err := alertDingding(item); err != nil {
+					klog.Error(err)
+					errorMsg.SetText(fmt.Sprintf("错误(%s): 拉取大淘客商品信息失败: %s", time.Now().Format("2006-01-02 15:04:05"), err))
+					continue
+				}
+				klog.Info("发送成功")
 			}
 		}
 	}
