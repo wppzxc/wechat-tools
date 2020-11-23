@@ -160,6 +160,7 @@ func main() {
 					NumberEdit{
 						Value:    Bind("CommissionPriceBegin", Range{0, 99}),
 						Decimals: 2,
+						Prefix:   "￥",
 					},
 					Label{
 						Text: "~",
@@ -167,6 +168,7 @@ func main() {
 					NumberEdit{
 						Value:    Bind("CommissionPriceEnd", Range{0, 99}),
 						Decimals: 2,
+						Prefix:   "￥",
 					},
 				},
 			},
