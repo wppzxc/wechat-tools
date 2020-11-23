@@ -67,7 +67,7 @@ func main() {
 	config = new(appConfig)
 	config.AppKey = "5e9d2dbadc286"
 	config.AppSecret = "8f3c81484fdf7bd2695ddbbc6a128201"
-	config.DingdingWebhookToken = "9d7888ccd788c2aed4fcc79377c02400a816cd18db6598f09ecd152c7daf8466"
+	config.DingdingWebhookToken = "8bad50b8dcfe6390ab3ec4eb8f8c6d3b5a2c04104b669bd5b8d6caed1c42c602"
 	config.TaobaoAppKey = "30029015"
 	config.TaobaoAppSecret = "b9f71d954e6a331a160c6c33956f7c44"
 	config.TaobaoAdzongID = "110409800054"
@@ -379,6 +379,8 @@ func alertDingding(item DaTaoKeItem) error {
 	6，店铺类型: %s
 	7，到手佣金: %.2f
 	8，实际成本: %.2f
+	9，建议淘礼金价格: %.2f
+	10，建议淘礼金后价格: %.2f
 `
 
 	shopName := "天猫"
@@ -389,6 +391,11 @@ func alertDingding(item DaTaoKeItem) error {
 	finalCommisson := item.ActualPrice * (item.CommissionRate / 100) * 0.9
 	//  到手成本（实际成本） = 券后价-到手佣金
 	finalCost := item.ActualPrice - finalCommisson
+
+	// 建议淘礼金价格 = 0.75*券后价*佣金
+	recommendedTaolijin := 0.75 * item.ActualPrice * (item.CommissionRate / 100)
+	// 建议淘礼金后价格 = 券后价-建议淘礼金金额
+	recommendedAfterTaolijin := item.ActualPrice - recommendedTaolijin
 	contentText := fmt.Sprintf(content,
 		item.GoodsId,
 		item.DTitle,
@@ -397,7 +404,9 @@ func alertDingding(item DaTaoKeItem) error {
 		item.CouponStartTime,
 		shopName,
 		finalCommisson,
-		finalCost)
+		finalCost,
+		recommendedTaolijin,
+		recommendedAfterTaolijin)
 
 	sendText := fmt.Sprintf(msg, contentText)
 	klog.Info(sendText)
