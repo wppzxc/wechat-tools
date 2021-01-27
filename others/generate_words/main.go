@@ -90,8 +90,8 @@ func main() {
 				Layout: HBox{},
 				Children: []Widget{
 					PushButton{
-						Text:      "生成",
-						OnClicked: startLoopCheck,
+						Text:      "生成并导出",
+						OnClicked: startAndExport,
 					},
 				},
 			},
@@ -157,6 +157,32 @@ func startLoopCheck() {
 			},
 		},
 	}.Run(mw)
+}
+
+func startAndExport() {
+	filename := defaultFIle
+	content, err := ioutil.ReadFile(filename)
+	if err != nil {
+		walk.MsgBox(mw, "错误", fmt.Sprintf("读取词库错误：%s", err.Error()), walk.MsgBoxIconError)
+		return
+	}
+
+	words := strings.Split(string(content), "\r\n")
+
+	results, err := generateWords(words)
+	if err != nil {
+		walk.MsgBox(mw, "错误", fmt.Sprintf("生成词汇错误：%s", err.Error()), walk.MsgBoxIconError)
+		return
+	}
+
+	str := strings.Join(results, "\n")
+
+	if err := ioutil.WriteFile(fmt.Sprintf("%d.txt", time.Now().Unix()), []byte(str), 0600); err != nil {
+		walk.MsgBox(mw, "错误", fmt.Sprintf("导出错误：%s", err.Error()), walk.MsgBoxIconError)
+	}
+
+	walk.MsgBox(mw, "成功", "导出成功", walk.MsgBoxIconInformation)
+
 }
 
 func generateWords(words []string) ([]string, error) {
