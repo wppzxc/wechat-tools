@@ -11,7 +11,7 @@
     <h1>上传图片</h1>
     <form id="image-form" action="http://81.69.33.234:8080/file" method="post" enctype="multipart/form-data"
         target="hidden_frame">
-        <p><input type="file" name="image.jpg"></p>
+        <p><input type="file" name="image.jpg" accept=".jpg,.jpeg"></p>
         <p><button onclick="submit()">上传</button></p>
     </form>
     <iframe name='hidden_frame' id="hidden_frame"></iframe>
