@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="cn">
+
+<head>
+    <title>公众号图文数据修改</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+    <script src="https://lib.sinaapp.com/js/jquery/2.0.2/jquery-2.0.2.min.js"></script>
+</head>
+
+<body>
+    <h1>上传图片</h1>
+    <form id="image-form" action="http://81.69.33.234:8080/file" method="post" enctype="multipart/form-data"
+        target="hidden_frame">
+        <p><input type="file" name="image.jpg"></p>
+        <p><button onclick="submit()">上传</button></p>
+    </form>
+    <iframe name='hidden_frame' id="hidden_frame"></iframe>
+    <h1>填写公众号账号信息</h1>
+    <p><textarea id="wxinfos"></textarea></p>
+    <h1>填写标题</h1>
+    <p><textarea id="titles"></textarea></p>
+    <p><button id="upload-btn">提交</button></p>
+</body>
+
+</html>
+<script>
+    function submit() {
+        var form = document.getElementById('image-form');
+        form.submit();
+    }
+
+    $("#upload-btn").click(function () {
+        wxinfosStr = $("#wxinfos").val()
+        titlesStr = $("#titles").val()
+        wxinfos = wxinfosStr.split("\n")
+        infos = []
+        for (i in wxinfos) {
+            info = wxinfos[i].split(" ")
+            wx = {
+                "wxAppID": info[0],
+                "wxAppSecret": info[1]
+            }
+            infos.push(wx)
+        }
+        titles = titlesStr.split("\n")
+        var formData = {}
+        formData = {
+            "wxInfos": infos,
+            "titles": titles
+        }
+        console.log(formData)
+        $.ajax({
+            async: false,
+            url: "http://81.69.33.234:8080/upload",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(formData),
+            success: function (data) {
+                alert(JSON.stringify(data));
+            },
+            error: function (error) {
+                alert(JSON.stringify(error));
+            }
+        })
+    });
+
+</script>
