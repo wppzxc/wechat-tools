@@ -88,6 +88,8 @@ func main() {
 	flag.Set("alsologtostderr", "false")
 	flag.Parse()
 
+	defer klog.Flush()
+
 	e := echo.New()
 	e.HideBanner = true
 	e.Use(middleware.Logger())
@@ -141,10 +143,6 @@ func upload(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err)
 	}
 
-	body, _ := ioutil.ReadAll(c.Request().Body)
-	defer c.Request().Body.Close()
-	klog.Info(string(body))
-
 	if len(formData.WxInfos) == 0 {
 		return c.JSON(http.StatusBadRequest, "wxInfos can't be null")
 	}
@@ -156,6 +154,7 @@ func upload(c echo.Context) error {
 	var innerErrors string
 
 	for _, wx := range formData.WxInfos {
+		klog.Infof("开始处理公众号: %s", wx.WxAppID)
 		// 获取token
 		token, err := getAccessToken(wx)
 		if err != nil {
@@ -230,6 +229,8 @@ func upload(c echo.Context) error {
 			}
 			klog.Infof("更新%s 第%d标题成功", wx.WxAppID, i+1)
 		}
+
+		formData.Titles = formData.Titles[7:]
 	}
 	if len(innerErrors) == 0 {
 		return c.JSON(http.StatusOK, "ok")
@@ -373,7 +374,6 @@ func uploadWxImage(token *TokenResponse) (*WxImageResp, error) {
 		return nil, err
 	}
 
-	fmt.Println(string(body))
 	wximresp := new(WxImageResp)
 	if err := json.Unmarshal(body, wximresp); err != nil {
 		klog.Error(err)
