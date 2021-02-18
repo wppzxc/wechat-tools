@@ -192,12 +192,13 @@ func generateWords(words []string) ([]string, error) {
 		result := config.MainWord
 		for {
 			word := words[rand.Intn(wordsLen)]
-			result = result + config.SplitWord + word
-			resultLen := len([]rune(result))
+			tmpStr := result + config.SplitWord + word
+			resultLen := len([]rune(tmpStr))
 			if resultLen >= config.Length {
 				results = append(results, result)
 				break
 			}
+			result = tmpStr
 		}
 	}
 	return results, nil
