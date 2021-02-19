@@ -19,9 +19,15 @@ import (
 	"k8s.io/klog"
 )
 
+const (
+	trBeforeStr = `<tr><td style="vertical-align: middle; text-align: center; margin: 5px 10px;">`
+	trAfterStr  = `</td></tr>`
+)
+
 type FormData struct {
-	WxInfos []WxInfo `json:"wxInfos"`
-	Titles  []string `json:"titles"`
+	WxInfos    []WxInfo `json:"wxInfos"`
+	Titles     []string `json:"titles"`
+	InsertStrs []string `json:"insertStrs"`
 }
 
 type TokenResponse struct {
@@ -189,7 +195,7 @@ func upload(c echo.Context) error {
 					// Digest: article.Digest,
 					Digest:       "摘要",
 					ShowCoverPic: article.ShowCoverPic,
-					Content:      article.Content,
+					Content:      insertContentStr(formData.InsertStrs[i], article.Content),
 					// ContentSourceURL: article.ContentSourceURL,
 					ContentSourceURL: "http://hm90391r5790.jshdnb.com/jump?activity_id=702f6b88707173d7429693150a479a36b07d4",
 				},
@@ -231,6 +237,7 @@ func upload(c echo.Context) error {
 		}
 
 		formData.Titles = formData.Titles[7:]
+		formData.InsertStrs = formData.InsertStrs[7:]
 	}
 	if len(innerErrors) == 0 {
 		return c.JSON(http.StatusOK, "ok")
@@ -380,4 +387,14 @@ func uploadWxImage(token *TokenResponse) (*WxImageResp, error) {
 		return nil, err
 	}
 	return wximresp, nil
+}
+
+func insertContentStr(str string, content string) string {
+	if len(str) == 0 {
+		return content
+	}
+
+	old := `此处要插入`
+	new := str
+	return strings.Replace(content, old, new, 1)
 }

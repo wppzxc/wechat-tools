@@ -3,7 +3,7 @@
 
 <head>
     <title>公众号图文数据修改</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <script src="https://lib.sinaapp.com/js/jquery/2.0.2/jquery-2.0.2.min.js"></script>
 </head>
 
@@ -17,6 +17,8 @@
     <iframe name='hidden_frame' id="hidden_frame"></iframe>
     <h1>填写公众号账号信息</h1>
     <p><textarea id="wxinfos"></textarea></p>
+    <h1>填写插入的内容</h1>
+    <p><textarea id="insertstr"></textarea></p>
     <h1>填写标题</h1>
     <p><textarea id="titles"></textarea></p>
     <p><button id="upload-btn">提交</button></p>
@@ -32,6 +34,7 @@
     $("#upload-btn").click(function () {
         wxinfosStr = $("#wxinfos").val()
         titlesStr = $("#titles").val()
+        insertstr = $("#insertstr").val()
         wxinfos = wxinfosStr.split("\n")
         infos = []
         for (i in wxinfos) {
@@ -43,10 +46,11 @@
             infos.push(wx)
         }
         titles = titlesStr.split("\n")
-        var formData = {}
-        formData = {
+        insertstrs = insertstr.split("\n")
+        var formData = {
             "wxInfos": infos,
-            "titles": titles
+            "titles": titles,
+            "insertStrs": insertstrs
         }
         console.log(formData)
         $.ajax({
