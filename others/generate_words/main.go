@@ -18,7 +18,8 @@ const (
 // Config config for main
 type Config struct {
 	MainWord     string `json:"mainWord"`
-	Length       int    `json:"length"`
+	LengthLow    int    `json:"lengthLow"`
+	LengthHigh   int    `json:"lengthHigh"`
 	SplitWord    string `json:"splitWord"`
 	ResultNumber int    `json:"resultNumber"`
 }
@@ -55,10 +56,17 @@ func main() {
 				Layout: HBox{},
 				Children: []Widget{
 					Label{
-						Text: "长度",
+						Text: "长度下限",
 					},
 					NumberEdit{
-						Value:    Bind("Length", Range{0, 10000}),
+						Value:    Bind("LengthLow", Range{0, 10000}),
+						Decimals: 0,
+					},
+					Label{
+						Text: "长度上限",
+					},
+					NumberEdit{
+						Value:    Bind("LengthHigh", Range{0, 10000}),
 						Decimals: 0,
 					},
 				},
@@ -192,13 +200,14 @@ func generateWords(words []string) ([]string, error) {
 		result := config.MainWord
 		for {
 			word := words[rand.Intn(wordsLen)]
-			tmpStr := result + config.SplitWord + word
-			resultLen := len([]rune(tmpStr))
-			if resultLen >= config.Length {
-				results = append(results, result)
+			result = result + config.SplitWord + word
+			resultLen := len([]rune(result))
+			if resultLen >= config.LengthLow {
+				if resultLen <= config.LengthHigh {
+					results = append(results, result)
+				}
 				break
 			}
-			result = tmpStr
 		}
 	}
 	return results, nil
