@@ -4,12 +4,12 @@
 <head>
     <title>公众号图文数据修改</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <script src="https://lib.sinaapp.com/js/jquery/2.0.2/jquery-2.0.2.min.js"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
 </head>
 
 <body>
     <h1>上传图片</h1>
-    <form id="image-form" action="http://81.69.33.234:8080/file" method="post" enctype="multipart/form-data"
+    <form id="image-form" action="http://121.4.246.48:8080/file" method="post" enctype="multipart/form-data"
         target="hidden_frame">
         <p><input type="file" name="image.jpg" accept=".jpg,.jpeg"></p>
         <p><button onclick="submit()">上传</button></p>
@@ -19,6 +19,8 @@
     <p><textarea id="wxinfos"></textarea></p>
     <h1>填写插入的内容</h1>
     <p><textarea id="insertstr"></textarea></p>
+    <h1>填写修改的内容（修改 "从这里开始" 到 "从这里结束" 之间的内容）</h1>
+    <p><textarea id="updateStr"></textarea></p>
     <h1>填写标题</h1>
     <p><textarea id="titles"></textarea></p>
     <p><button id="upload-btn">提交</button></p>
@@ -35,6 +37,7 @@
         wxinfosStr = $("#wxinfos").val()
         titlesStr = $("#titles").val()
         insertstr = $("#insertstr").val()
+        updatestr = $("#updateStr").val()
         wxinfos = wxinfosStr.split("\n")
         infos = []
         for (i in wxinfos) {
@@ -47,15 +50,17 @@
         }
         titles = titlesStr.split("\n")
         insertstrs = insertstr.split("\n")
+        updatestrs = updatestr.split("\n")
         var formData = {
             "wxInfos": infos,
             "titles": titles,
-            "insertStrs": insertstrs
+            "insertStrs": insertstrs,
+            "updateStrs": updatestrs
         }
         console.log(formData)
         $.ajax({
             async: false,
-            url: "http://81.69.33.234:8080/upload",
+            url: "http://121.4.246.48:8080/upload",
             type: "POST",
             contentType: "application/json",
             data: JSON.stringify(formData),

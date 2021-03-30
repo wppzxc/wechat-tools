@@ -24,10 +24,16 @@ const (
 	trAfterStr  = `</td></tr>`
 )
 
+const (
+	updateBeginStr = "从这里开始"
+	updateEndStr   = "从这里结束"
+)
+
 type FormData struct {
 	WxInfos    []WxInfo `json:"wxInfos"`
 	Titles     []string `json:"titles"`
 	InsertStrs []string `json:"insertStrs"`
+	UpdateStrs []string `json:"updateStrs"`
 }
 
 type TokenResponse struct {
@@ -184,18 +190,24 @@ func upload(c echo.Context) error {
 		}
 		// 更新图文素材
 		for i, article := range news.Content.NewsItem {
+			var newContent string
+			if len(formData.InsertStrs) > 0 {
+				newContent = insertContentStr(formData.InsertStrs[i], article.Content)
+			}
+			if len(formData.UpdateStrs) > 0 {
+				newContent = updateContentStr(formData.UpdateStrs[i], article.Content)
+			}
 			updateItem := UpdateWxNews{
 				MediaID: news.MediaID,
 				Index:   i,
 				Articles: Article{
-					// TODO: 标题是8个循环用，还是所有的一起循环用
 					Title:        formData.Titles[i],
 					ThumbMediaID: imageResp.MediaID,
 					Author:       article.Author,
 					// Digest: article.Digest,
 					Digest:       "摘要",
 					ShowCoverPic: article.ShowCoverPic,
-					Content:      insertContentStr(formData.InsertStrs[i], article.Content),
+					Content:      newContent,
 					// ContentSourceURL: article.ContentSourceURL,
 					ContentSourceURL: "http://hm90391r5790.jshdnb.com/jump?activity_id=702f6b88707173d7429693150a479a36b07d4",
 				},
@@ -397,4 +409,36 @@ func insertContentStr(str string, content string) string {
 	old := `此处要插入`
 	new := str
 	return strings.Replace(content, old, new, 1)
+}
+
+func updateContentStr(str string, content string) string {
+	if len(str) == 0 {
+		return content
+	}
+
+	beginIndex := UnicodeIndex(content, updateBeginStr)
+	endIndex := UnicodeIndex(content, updateEndStr)
+	if beginIndex <= 0 || endIndex <= 0 {
+		return content
+	}
+	runes := []rune(content)
+	newRunes := runes[:beginIndex]
+	newRunes = append(newRunes, []rune(str)...)
+	newRunes = append(newRunes, runes[endIndex+len([]rune(updateEndStr)):]...)
+	return string(newRunes)
+}
+
+func UnicodeIndex(str, substr string) int {
+	// 子串在字符串的字节位置
+	result := strings.Index(str, substr)
+	if result >= 0 {
+		// 获得子串之前的字符串并转换成[]byte
+		prefix := []byte(str)[0:result]
+		// 将子串之前的字符串转换成[]rune
+		rs := []rune(string(prefix))
+		// 获得子串之前的字符串的长度，便是子串在字符串的字符位置
+		result = len(rs)
+	}
+
+	return result
 }
