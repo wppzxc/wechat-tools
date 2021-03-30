@@ -300,6 +300,9 @@ func getWxMaterial(token *TokenResponse) (*MetarialItem, error) {
 		return nil, err
 	}
 
+	if len(batchMaterial.Item) == 0 {
+		return nil, fmt.Errorf("can't get material items")
+	}
 	return &batchMaterial.Item[0], nil
 }
 
