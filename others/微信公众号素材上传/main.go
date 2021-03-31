@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -149,11 +150,22 @@ func uploadFile(c echo.Context) error {
 }
 
 func upload(c echo.Context) error {
+	defer func() {
+		if err := recover(); err != nil {
+			klog.Error(err)
+			klog.Error(string(debug.Stack()))
+		}
+	}()
+
 	formData := new(FormData)
 	if err := c.Bind(formData); err != nil {
 		klog.Errorf("Error in bind formdata", err)
 		return c.JSON(http.StatusBadRequest, err)
 	}
+	klog.Infof("titles len : %d", len(formData.Titles))
+	klog.Infof("wxInfos len : %d", len(formData.WxInfos))
+	klog.Infof("insertStrs len : %d", len(formData.InsertStrs))
+	klog.Infof("updateStrs len : %d", len(formData.UpdateStrs))
 
 	if len(formData.WxInfos) == 0 {
 		return c.JSON(http.StatusBadRequest, "wxInfos can't be null")
@@ -161,6 +173,16 @@ func upload(c echo.Context) error {
 
 	if len(formData.Titles) == 0 {
 		return c.JSON(http.StatusBadRequest, "titles can't be null")
+	}
+
+	var insert bool
+	var update bool
+
+	if len(formData.InsertStrs) > 1 {
+		insert = true
+	}
+	if len(formData.UpdateStrs) > 1 {
+		update = true
 	}
 
 	var innerErrors string
@@ -191,10 +213,10 @@ func upload(c echo.Context) error {
 		// 更新图文素材
 		for i, article := range news.Content.NewsItem {
 			var newContent string
-			if len(formData.InsertStrs) > 0 {
+			if insert {
 				newContent = insertContentStr(formData.InsertStrs[i], article.Content)
 			}
-			if len(formData.UpdateStrs) > 0 {
+			if update {
 				newContent = updateContentStr(formData.UpdateStrs[i], article.Content)
 			}
 			updateItem := UpdateWxNews{
@@ -244,12 +266,18 @@ func upload(c echo.Context) error {
 			if re.ErrCode != 0 {
 				klog.Error(re.ErrMsg)
 				innerErrors = fmt.Sprintf("%s\n %s update news error: %s", innerErrors, wx.WxAppID, re.ErrMsg)
+			} else {
+				klog.Infof("更新%s 第%d标题成功", wx.WxAppID, i+1)
 			}
-			klog.Infof("更新%s 第%d标题成功", wx.WxAppID, i+1)
 		}
 
 		formData.Titles = formData.Titles[7:]
-		formData.InsertStrs = formData.InsertStrs[7:]
+		if insert {
+			formData.InsertStrs = formData.InsertStrs[7:]
+		}
+		if update {
+			formData.UpdateStrs = formData.UpdateStrs[7:]
+		}
 	}
 	if len(innerErrors) == 0 {
 		return c.JSON(http.StatusOK, "ok")
@@ -425,9 +453,9 @@ func updateContentStr(str string, content string) string {
 		return content
 	}
 	runes := []rune(content)
-	newRunes := runes[:beginIndex]
+	newRunes := runes[:beginIndex+len([]rune(updateBeginStr))]
 	newRunes = append(newRunes, []rune(str)...)
-	newRunes = append(newRunes, runes[endIndex+len([]rune(updateEndStr)):]...)
+	newRunes = append(newRunes, runes[endIndex:]...)
 	return string(newRunes)
 }
 
